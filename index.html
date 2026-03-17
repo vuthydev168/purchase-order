@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Purchase Order</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════
+   LIGHT THEME TOKENS
+══════════════════════════════════════ */
+:root{
+  --bg:#f4f6fb;
+  --s1:#ffffff;
+  --s2:#f0f2f8;
+  --s3:#e6e9f4;
+  --border:#dde1ee;
+  --accent:#3b72f6;
+  --accent-lt:#eef2fe;
+  --purple:#7c3aed;
+  --green:#059669;
+  --green-lt:#ecfdf5;
+  --amber:#d97706;
+  --red:#dc2626;
+  --text:#1a1d2e;
+  --text2:#4b5068;
+  --muted:#8a90a8;
+  --shadow:0 1px 3px rgba(0,0,0,.08),0 4px 12px rgba(0,0,0,.05);
+  --shadow-md:0 4px 20px rgba(0,0,0,.10);
+  --mono:'IBM Plex Mono',monospace;
+  --sans:'DM Sans',sans-serif;
+}
+
+/* ══════════════════════════════════════
+   RESET & BASE
+══════════════════════════════════════ */
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;margin:0;padding:0;background:var(--bg);color:var(--text);font-family:var(--sans);overflow:hidden;}
+
+/* ══════════════════════════════════════
+   LAYOUT — PHONE vs TABLET
+   Phone  (<768px): full-screen single column
+   Tablet (≥768px): sidebar (supplier list) + main panel side by side
+══════════════════════════════════════ */
+#app{
+  display:flex;
+  height:100dvh;
+  width:100%;
+  overflow:hidden;
+  background:var(--bg);
+}
+
+/* ── Sidebar (tablet only) ── */
+#sidebar{
+  width:320px;
+  flex-shrink:0;
+  display:flex;
+  flex-direction:column;
+  background:var(--s1);
+  border-right:1px solid var(--border);
+  overflow:hidden;
+}
+
+/* ── Main panel ── */
+#main{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  background:var(--bg);
+}
+
+/* Phone: sidebar IS the full screen; main panel hidden until PO opened */
+@media(max-width:767px){
+  #sidebar{
+    width:100%;
+    position:absolute;
+    inset:0;
+    z-index:10;
+    transition:transform .28s cubic-bezier(.4,0,.2,1);
+  }
+  #sidebar.hidden-mobile{transform:translateX(-100%);}
+  #main{
+    position:absolute;
+    inset:0;
+    z-index:5;
+  }
+}
+
+/* Tablet: both visible side by side */
+@media(min-width:768px){
+  #sidebar{display:flex;}
+  #main{display:flex;}
+  /* modal centered on tablet */
+  .overlay{align-items:center;justify-content:center;}
+  .sheet{border-radius:18px;width:480px;max-width:95vw;max-height:90dvh;}
+}
+
+/* ══════════════════════════════════════
+   VIEWS (inside #main)
+══════════════════════════════════════ */
+.view{display:none;flex-direction:column;flex:1;overflow:hidden;}
+.view.active{display:flex;}
+
+/* ══════════════════════════════════════
+   SIDEBAR HEADER
+══════════════════════════════════════ */
+.side-head{
+  padding:16px 16px 10px;
+  background:var(--s1);
+  border-bottom:1px solid var(--border);
+  flex-shrink:0;
+}
+.side-head-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.side-title{font-size:20px;font-weight:700;letter-spacing:-.4px;color:var(--text);}
+.side-title span{color:var(--accent);}
+.icon-btn{
+  width:36px;height:36px;border-radius:11px;
+  background:var(--s2);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;color:var(--muted);font-size:13px;
+  transition:all .15s;flex-shrink:0;
+}
+.icon-btn:hover{background:var(--s3);color:var(--text);}
+.icon-btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;}
+
+/* Search */
+.search-wrap{position:relative;}
+.search-wrap i{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px;pointer-events:none;}
+.search-input{
+  width:100%;background:var(--s2);border:1.5px solid var(--border);
+  border-radius:11px;color:var(--text);font-family:var(--sans);
+  font-size:14px;padding:9px 12px 9px 34px;outline:none;transition:border .2s;
+}
+.search-input:focus{border-color:var(--accent);background:#fff;}
+.search-input::placeholder{color:var(--muted);}
+
+/* ══════════════════════════════════════
+   SUPPLIER LIST
+══════════════════════════════════════ */
+.sup-list{flex:1;overflow-y:auto;padding:6px 0;}
+.sup-list::-webkit-scrollbar{width:4px;}
+.sup-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+
+.sup-item{
+  display:flex;align-items:center;gap:12px;
+  padding:11px 16px;cursor:pointer;
+  transition:background .12s;
+  border-bottom:1px solid var(--border);
+}
+.sup-item:hover{background:var(--s2);}
+.sup-item:active{background:var(--s3);}
+.sup-item.active-sup{background:var(--accent-lt);border-left:3px solid var(--accent);}
+
+.ava{
+  width:48px;height:48px;border-radius:14px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:16px;position:relative;
+}
+.dot{
+  position:absolute;bottom:-1px;right:-1px;
+  width:11px;height:11px;border-radius:50%;border:2px solid var(--s1);
+}
+.dot.online{background:var(--green);}
+.dot.away{background:var(--amber);}
+.dot.offline{background:var(--muted);}
+
+.sup-body{flex:1;min-width:0;}
+.sup-name{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text);}
+.sup-meta{font-size:11px;color:var(--muted);margin-top:2px;}
+.sup-code{
+  font-family:var(--mono);font-size:10px;
+  background:var(--accent-lt);border-radius:4px;
+  padding:1px 5px;color:var(--accent);
+}
+.cur-tag{
+  font-family:var(--mono);font-size:10px;
+  background:var(--s2);border:1px solid var(--border);
+  border-radius:4px;padding:1px 5px;color:var(--text2);
+}
+.sup-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;}
+.sup-time{font-size:11px;color:var(--muted);}
+.badge{background:var(--accent);color:#fff;border-radius:50px;font-size:10px;font-weight:700;padding:2px 7px;min-width:18px;text-align:center;}
+
+/* ══════════════════════════════════════
+   PO CHAT TOPBAR
+══════════════════════════════════════ */
+.chat-topbar{
+  display:flex;align-items:center;gap:10px;
+  padding:12px 16px;
+  background:var(--s1);
+  border-bottom:1px solid var(--border);
+  flex-shrink:0;
+  box-shadow:0 1px 0 var(--border);
+}
+.back-btn{
+  width:32px;height:32px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;color:var(--accent);font-size:17px;
+  border-radius:8px;flex-shrink:0;
+}
+/* Hide back button on tablet (sidebar always visible) */
+@media(min-width:768px){.back-btn{display:none;}}
+
+.chat-ava{
+  width:38px;height:38px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:14px;flex-shrink:0;
+}
+.chat-hinfo{flex:1;min-width:0;}
+.chat-hname{font-weight:700;font-size:15px;color:var(--text);}
+.chat-hsub{font-size:11px;margin-top:1px;}
+.chat-hsub.online{color:var(--green);}
+.chat-hsub.away{color:var(--amber);}
+.chat-hsub.offline{color:var(--muted);}
+
+/* ══════════════════════════════════════
+   MESSAGES
+══════════════════════════════════════ */
+.messages{
+  flex:1;overflow-y:auto;
+  padding:16px 14px 8px;
+  display:flex;flex-direction:column;gap:10px;
+  background:var(--bg);
+}
+.messages::-webkit-scrollbar{width:4px;}
+.messages::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+
+.date-sep{
+  text-align:center;font-size:10px;color:var(--muted);
+  font-family:var(--mono);margin:2px 0;letter-spacing:.3px;
+}
+
+/* PO header bubble */
+.po-header-bubble{
+  background:var(--s1);border:1px solid var(--border);
+  border-radius:14px 14px 14px 4px;
+  padding:14px 15px;align-self:flex-start;
+  max-width:82%;box-shadow:var(--shadow);
+}
+.po-number{font-family:var(--mono);font-size:11px;color:var(--accent);margin-bottom:3px;}
+.po-sup-name{font-weight:700;font-size:15px;margin-bottom:2px;color:var(--text);}
+.po-date{font-size:11px;color:var(--muted);}
+
+/* Line item bubble */
+.line-bubble{
+  background:var(--s1);border:1.5px solid var(--border);
+  border-radius:4px 14px 14px 14px;
+  padding:12px 13px;align-self:flex-end;
+  max-width:88%;
+  box-shadow:var(--shadow);
+  animation:popUp .2s ease;
+}
+@media(min-width:768px){.line-bubble{max-width:72%;}}
+@keyframes popUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+.lb-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:7px;}
+.lb-code{
+  font-family:var(--mono);font-size:10px;color:var(--accent);
+  background:var(--accent-lt);border-radius:5px;padding:2px 7px;
+}
+.lb-actions{display:flex;gap:5px;flex-shrink:0;}
+.lb-action{
+  width:26px;height:26px;border-radius:7px;
+  border:1px solid var(--border);background:var(--s2);
+  color:var(--muted);display:flex;align-items:center;justify-content:center;
+  cursor:pointer;font-size:11px;transition:all .15s;
+}
+.lb-action:hover{background:var(--accent);color:#fff;border-color:var(--accent);}
+.lb-action.del:hover{background:var(--red);color:#fff;border-color:var(--red);}
+.lb-img{width:100%;border-radius:9px;object-fit:cover;max-height:150px;display:block;margin-bottom:9px;}
+.lb-name{font-weight:600;font-size:14px;margin-bottom:2px;color:var(--text);}
+.lb-row{display:flex;align-items:center;justify-content:space-between;margin-top:6px;}
+.lb-qty-price{font-size:12px;color:var(--muted);}
+.lb-qty-price span{font-family:var(--mono);color:var(--text2);font-weight:600;}
+.lb-subtotal{font-family:var(--mono);font-weight:700;font-size:15px;color:var(--accent);}
+
+/* Summary bubble */
+.summary-bubble{
+  background:var(--accent-lt);border:1.5px solid rgba(59,114,246,.2);
+  border-radius:14px 14px 14px 4px;
+  padding:14px 15px;align-self:flex-start;
+  max-width:88%;box-shadow:var(--shadow);animation:popUp .2s ease;
+}
+@media(min-width:768px){.summary-bubble{max-width:72%;}}
+.sb-title{font-size:11px;color:var(--accent);font-family:var(--mono);margin-bottom:10px;display:flex;align-items:center;gap:5px;font-weight:600;}
+.sb-line{display:flex;justify-content:space-between;font-size:12px;padding:5px 0;border-bottom:1px solid rgba(59,114,246,.1);}
+.sb-line:last-of-type{border-bottom:none;}
+.sb-line-name{color:var(--muted);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:10px;}
+.sb-line-val{font-family:var(--mono);font-weight:600;color:var(--text2);}
+.sb-total{display:flex;justify-content:space-between;font-weight:700;font-size:16px;margin-top:10px;padding-top:10px;border-top:1.5px solid rgba(59,114,246,.2);font-family:var(--mono);color:var(--accent);}
+
+/* Empty state */
+.empty-po{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  flex:1;text-align:center;padding:40px 30px;
+}
+.empty-po-icon{
+  width:68px;height:68px;border-radius:20px;
+  background:var(--s2);border:1.5px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-size:28px;color:var(--muted);margin:0 auto 18px;
+}
+.empty-po-title{font-size:16px;font-weight:600;color:var(--text);margin-bottom:6px;}
+.empty-po-sub{font-size:13px;line-height:1.7;color:var(--muted);}
+
+/* Welcome panel (tablet: shown before supplier selected) */
+.welcome-panel{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  flex:1;text-align:center;padding:40px;
+}
+.welcome-panel i{font-size:48px;color:var(--border);margin-bottom:18px;}
+.welcome-panel h3{font-size:18px;font-weight:700;color:var(--text);margin-bottom:8px;}
+.welcome-panel p{font-size:14px;color:var(--muted);line-height:1.7;}
+
+/* ══════════════════════════════════════
+   PO BOTTOM BAR
+══════════════════════════════════════ */
+.po-bar{
+  padding:11px 16px;background:var(--s1);
+  border-top:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;
+  flex-shrink:0;box-shadow:0 -1px 0 var(--border);
+}
+.po-bar-info{flex:1;}
+.po-bar-count{font-size:11px;color:var(--muted);}
+.po-bar-total{font-weight:700;font-size:18px;font-family:var(--mono);color:var(--accent);}
+.add-line-btn{
+  width:44px;height:44px;border-radius:13px;
+  background:var(--s2);border:1.5px solid var(--border);
+  color:var(--text2);display:flex;align-items:center;justify-content:center;
+  cursor:pointer;font-size:19px;transition:all .15s;flex-shrink:0;
+}
+.add-line-btn:hover{background:var(--accent);border-color:var(--accent);color:#fff;}
+.send-btn{
+  background:linear-gradient(135deg,var(--accent),var(--purple));
+  border:none;border-radius:13px;color:#fff;
+  font-family:var(--sans);font-weight:700;font-size:14px;
+  padding:11px 22px;cursor:pointer;white-space:nowrap;flex-shrink:0;
+  box-shadow:0 2px 10px rgba(59,114,246,.3);transition:opacity .15s,transform .1s;
+}
+.send-btn:hover{opacity:.92;}
+.send-btn:active{transform:scale(.97);}
+.send-btn:disabled{opacity:.35;cursor:not-allowed;box-shadow:none;}
+
+/* ══════════════════════════════════════
+   SUCCESS VIEW
+══════════════════════════════════════ */
+#view-success{align-items:center;justify-content:center;padding:40px 28px;text-align:center;background:var(--bg);}
+.suc-icon{
+  width:80px;height:80px;border-radius:50%;
+  background:var(--green-lt);border:2px solid var(--green);
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 20px;font-size:34px;color:var(--green);
+}
+.suc-title{font-size:24px;font-weight:700;margin-bottom:6px;color:var(--text);}
+.suc-sub{color:var(--muted);font-size:14px;margin-bottom:26px;line-height:1.6;}
+.po-box{
+  font-family:var(--mono);background:var(--s1);
+  border:1.5px solid var(--border);border-radius:14px;
+  padding:16px 22px;font-size:13px;margin-bottom:26px;
+  color:var(--accent);line-height:2;box-shadow:var(--shadow);
+}
+.home-btn{
+  background:var(--s1);border:1.5px solid var(--border);
+  border-radius:12px;color:var(--text);font-family:var(--sans);
+  font-weight:600;font-size:14px;padding:12px 30px;cursor:pointer;
+  transition:background .15s;
+}
+.home-btn:hover{background:var(--s2);}
+
+/* ══════════════════════════════════════
+   MODAL
+══════════════════════════════════════ */
+.overlay{
+  position:fixed;inset:0;background:rgba(15,17,26,.45);
+  z-index:200;display:flex;align-items:flex-end;
+  opacity:0;pointer-events:none;transition:opacity .2s;
+  backdrop-filter:blur(3px);
+}
+.overlay.open{opacity:1;pointer-events:all;}
+.sheet{
+  background:var(--s1);border-radius:22px 22px 0 0;
+  width:100%;max-height:94dvh;
+  transform:translateY(50px);
+  transition:transform .28s cubic-bezier(.32,1,.36,1);
+  overflow:hidden;display:flex;flex-direction:column;
+  box-shadow:0 -4px 30px rgba(0,0,0,.12);
+}
+.overlay.open .sheet{transform:translateY(0);}
+
+/* Tablet: center modal */
+@media(min-width:768px){
+  .overlay{align-items:center;justify-content:center;}
+  .sheet{
+    border-radius:20px;
+    width:500px;max-width:95vw;
+    max-height:90dvh;
+    transform:scale(.95) translateY(10px);
+    box-shadow:var(--shadow-md);
+  }
+  .overlay.open .sheet{transform:scale(1) translateY(0);}
+}
+
+.sheet-drag{width:38px;height:4px;border-radius:2px;background:var(--border);margin:13px auto 0;}
+@media(min-width:768px){.sheet-drag{display:none;}}
+.sheet-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:13px 18px 8px;border-bottom:1px solid var(--border);
+}
+.sheet-head h2{font-size:16px;font-weight:700;margin:0;color:var(--text);}
+.sheet-close{
+  width:30px;height:30px;border-radius:8px;
+  background:var(--s2);border:none;color:var(--muted);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;
+}
+.sheet-close:hover{background:var(--s3);color:var(--text);}
+.sheet-body{overflow-y:auto;padding:14px 18px 28px;flex:1;}
+.sheet-body::-webkit-scrollbar{width:4px;}
+.sheet-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+
+/* ── Form fields ── */
+.field{margin-bottom:14px;}
+.field label{
+  display:block;font-size:11px;font-weight:600;
+  color:var(--muted);margin-bottom:6px;
+  text-transform:uppercase;letter-spacing:.5px;
+}
+.field input,.field select,.field textarea{
+  width:100%;background:#fff;
+  border:1.5px solid var(--border);border-radius:11px;
+  color:var(--text);font-family:var(--sans);font-size:14px;
+  padding:10px 13px;outline:none;transition:border .2s,box-shadow .2s;
+  -webkit-appearance:none;appearance:none;
+}
+.field input:focus,.field select:focus,.field textarea:focus{
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(59,114,246,.12);
+}
+.field input::placeholder,.field textarea::placeholder{color:var(--muted);}
+.field textarea{resize:none;height:64px;line-height:1.5;}
+.field select{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238a90a8' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 13px center;padding-right:36px;
+  background-color:#fff;
+}
+.field select option{color:var(--text);}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.err{font-size:11px;color:var(--red);margin-top:4px;display:none;}
+
+/* Image upload */
+.img-upload-area{
+  border:1.5px dashed var(--border);border-radius:13px;
+  padding:18px;text-align:center;cursor:pointer;
+  transition:border-color .2s,background .2s;position:relative;overflow:hidden;
+  background:#fff;
+}
+.img-upload-area:hover{border-color:var(--accent);background:var(--accent-lt);}
+.img-upload-area.has-img{border-style:solid;border-color:var(--accent);padding:0;}
+.img-upload-area input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;font-size:0;}
+.img-upload-placeholder{display:flex;flex-direction:column;align-items:center;gap:6px;pointer-events:none;}
+.img-upload-placeholder i{font-size:24px;color:var(--muted);}
+.img-upload-placeholder span{font-size:13px;color:var(--muted);font-weight:500;}
+.img-upload-placeholder small{font-size:11px;color:var(--border);}
+#imgPreviewWrap{display:none;position:relative;}
+#imgPreview{width:100%;height:160px;object-fit:cover;border-radius:11px;display:block;}
+.img-remove{
+  position:absolute;top:8px;right:8px;width:28px;height:28px;
+  border-radius:8px;background:rgba(255,255,255,.9);
+  border:1px solid var(--border);
+  color:var(--text);display:flex;align-items:center;justify-content:center;
+  cursor:pointer;font-size:12px;z-index:2;
+  box-shadow:var(--shadow);
+}
+
+/* Subtotal preview */
+.subtotal-preview{
+  background:var(--accent-lt);border:1.5px solid rgba(59,114,246,.2);
+  border-radius:11px;padding:11px 14px;margin-bottom:14px;display:none;
+}
+.sheet-save{
+  width:100%;
+  background:linear-gradient(135deg,var(--accent),var(--purple));
+  border:none;border-radius:13px;color:#fff;
+  font-family:var(--sans);font-weight:700;font-size:15px;
+  padding:13px;cursor:pointer;margin-top:4px;
+  box-shadow:0 3px 12px rgba(59,114,246,.25);transition:opacity .15s;
+}
+.sheet-save:hover{opacity:.92;}
+.sheet-save:active{opacity:.82;}
+
+/* ── Supplier profile image ── */
+.ava{position:relative;overflow:hidden;}
+.ava img.ava-photo{
+  width:100%;height:100%;object-fit:cover;
+  border-radius:inherit;position:absolute;inset:0;
+  transition:opacity .2s;
+}
+.ava .ava-fallback{
+  position:relative;z-index:1;
+  width:100%;height:100%;display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:inherit;
+}
+/* chat header larger avatar */
+.chat-ava{position:relative;overflow:hidden;}
+.chat-ava img.ava-photo{
+  width:100%;height:100%;object-fit:cover;
+  border-radius:inherit;position:absolute;inset:0;
+}
+.chat-ava .ava-fallback{
+  position:relative;z-index:1;
+  width:100%;height:100%;display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:inherit;
+}
+/* profile header in PO bubble */
+.sup-profile-img{
+  width:44px;height:44px;border-radius:13px;object-fit:cover;
+  border:2px solid var(--border);flex-shrink:0;
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ══════════════════════════════════════
+       SIDEBAR — supplier list
+  ══════════════════════════════════════ -->
+  <div id="sidebar">
+    <div class="side-head">
+      <div class="side-head-row">
+        <div class="side-title">Purchase <span>Order</span></div>
+        <div class="icon-btn"><i class="fa fa-sliders-h"></i></div>
+      </div>
+      <div class="search-wrap">
+        <i class="fa fa-search"></i>
+        <input class="search-input" id="supSearch" placeholder="Search suppliers…" oninput="renderSuppliers(this.value)">
+      </div>
+    </div>
+    <div class="sup-list" id="supList"></div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       MAIN PANEL
+  ══════════════════════════════════════ -->
+  <div id="main">
+
+    <!-- ── Welcome (tablet, no supplier selected) ── -->
+    <div id="view-welcome" class="view active">
+      <div class="welcome-panel">
+        <i class="fa fa-file-invoice-dollar"></i>
+        <h3>Select a Supplier</h3>
+        <p>Choose a supplier from the list<br>to start a new Purchase Order.</p>
+      </div>
+    </div>
+
+    <!-- ── PO Chat view ── -->
+    <div id="view-po" class="view">
+      <div class="chat-topbar">
+        <div class="back-btn" onclick="goBack()"><i class="fa fa-chevron-left"></i></div>
+        <div class="chat-ava" id="chatAva"></div>
+        <div class="chat-hinfo">
+          <div class="chat-hname" id="chatName"></div>
+          <div class="chat-hsub" id="chatSub"></div>
+        </div>
+        <div style="display:flex;gap:7px;margin-left:auto;">
+          <div class="icon-btn" id="summaryBtn" onclick="toggleSummary()" title="Summary"><i class="fa fa-list-ul"></i></div>
+          <div class="icon-btn" onclick="openModal(null)" title="Add Item"><i class="fa fa-plus"></i></div>
+        </div>
+      </div>
+      <div class="messages" id="messages"></div>
+      <div class="po-bar">
+        <div class="po-bar-info">
+          <div class="po-bar-count" id="barCount">0 lines</div>
+          <div class="po-bar-total" id="barTotal">—</div>
+        </div>
+        <div class="add-line-btn" onclick="openModal(null)" title="Add item"><i class="fa fa-plus"></i></div>
+        <button class="send-btn" id="sendBtn" disabled onclick="submitPO()">
+          <i class="fa fa-paper-plane" style="margin-right:6px;"></i>Send PO
+        </button>
+      </div>
+    </div>
+
+    <!-- ── Success ── -->
+    <div id="view-success" class="view">
+      <div class="suc-icon"><i class="fa fa-check"></i></div>
+      <div class="suc-title">PO Submitted!</div>
+      <div class="suc-sub" id="sucSub"></div>
+      <div class="po-box" id="sucBox"></div>
+      <button class="home-btn" onclick="goHome()">
+        <i class="fa fa-arrow-left" style="margin-right:8px;"></i>Back to Suppliers
+      </button>
+    </div>
+
+  </div><!-- #main -->
+
+  <!-- ══════════════════════════════════════
+       MODAL — Add / Edit Item
+  ══════════════════════════════════════ -->
+  <div class="overlay" id="modal" onclick="overlayClick(event)">
+    <div class="sheet">
+      <div class="sheet-drag"></div>
+      <div class="sheet-head">
+        <h2 id="modalTitle">Add Item</h2>
+        <button class="sheet-close" onclick="closeModal()"><i class="fa fa-times"></i></button>
+      </div>
+      <div class="sheet-body">
+        <input type="hidden" id="fLineId">
+
+        <!-- Image upload -->
+        <div class="field">
+          <label>Item Image <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">(optional)</span></label>
+          <div class="img-upload-area" id="imgUploadArea">
+            <input type="file" id="fImage" accept="image/*" onchange="handleImage(event)">
+            <div class="img-upload-placeholder" id="imgPlaceholder">
+              <i class="fa fa-camera"></i>
+              <span>Tap to upload photo</span>
+              <small>JPG · PNG · WEBP</small>
+            </div>
+            <div id="imgPreviewWrap">
+              <img id="imgPreview" src="" alt="preview">
+              <div class="img-remove" onclick="removeImage(event)"><i class="fa fa-times"></i></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Code + Qty -->
+        <div class="row2">
+          <div class="field">
+            <label>Item Code <span style="color:var(--red)">*</span></label>
+            <input id="fCode" placeholder="e.g. EL-101" maxlength="20" autocomplete="off" autocapitalize="characters">
+            <div class="err" id="errCode">Required</div>
+          </div>
+          <div class="field">
+            <label>Quantity <span style="color:var(--red)">*</span></label>
+            <input id="fQty" type="number" min="1" step="1" placeholder="1" inputmode="numeric">
+            <div class="err" id="errQty">Required</div>
+          </div>
+        </div>
+
+        <!-- Name -->
+        <div class="field">
+          <label>Item Name <span style="color:var(--red)">*</span></label>
+          <input id="fName" placeholder="e.g. Arduino Nano v3" autocomplete="off">
+          <div class="err" id="errName">Required</div>
+        </div>
+
+        <!-- Price -->
+        <div class="field">
+          <label>Unit Price <span style="color:var(--red)">*</span></label>
+          <input id="fPrice" type="number" min="0" step="0.01" placeholder="0.00" inputmode="decimal">
+          <div class="err" id="errPrice">Required</div>
+        </div>
+
+        <!-- Live subtotal -->
+        <div class="subtotal-preview" id="subPreview">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:12px;color:var(--accent);font-weight:600;">Subtotal</span>
+            <span id="subAmt" style="font-family:var(--mono);font-weight:700;font-size:17px;color:var(--accent);"></span>
+          </div>
+        </div>
+
+        <button class="sheet-save" onclick="saveLine()">
+          <i class="fa fa-check" style="margin-right:7px;"></i><span id="saveLbl">Add to PO</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- #app -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script>
+// ══════════════════════════ DATA ══════════════════════════
+const SUPPLIERS = [
+  {id:1,name:"TechParts Co.",code:"SUP-001",ava:"TP",color:"#3b72f6",bg:"#eef2fe",status:"online",meta:"Electronics & Components",time:"10:24",badge:3,currency:"USD",photo:"https://api.dicebear.com/7.x/initials/svg?seed=TechParts&backgroundColor=dbeafe&textColor=1d4ed8&fontSize=38&fontWeight=700"},
+  {id:2,name:"Global Supply",code:"SUP-002",ava:"GS",color:"#059669",bg:"#ecfdf5",status:"online",meta:"General Merchandise",time:"09:11",badge:0,currency:"CNY",photo:"https://api.dicebear.com/7.x/initials/svg?seed=GlobalSupply&backgroundColor=d1fae5&textColor=065f46&fontSize=38&fontWeight=700"},
+  {id:3,name:"FastMetals Ltd",code:"SUP-003",ava:"FM",color:"#d97706",bg:"#fffbeb",status:"away",meta:"Steel & Aluminum",time:"Yesterday",badge:1,currency:"VND",photo:"https://api.dicebear.com/7.x/initials/svg?seed=FastMetals&backgroundColor=fef3c7&textColor=92400e&fontSize=38&fontWeight=700"},
+  {id:4,name:"Polymer World",code:"SUP-004",ava:"PW",color:"#7c3aed",bg:"#f5f3ff",status:"offline",meta:"Plastics & Rubber",time:"Mon",badge:0,currency:"EUR",photo:"https://api.dicebear.com/7.x/initials/svg?seed=PolymerWorld&backgroundColor=ede9fe&textColor=4c1d95&fontSize=38&fontWeight=700"},
+  {id:5,name:"Nordic Parts AB",code:"SUP-005",ava:"NP",color:"#dc2626",bg:"#fef2f2",status:"online",meta:"Mechanical Parts",time:"10:01",badge:2,currency:"USD",photo:"https://api.dicebear.com/7.x/initials/svg?seed=NordicParts&backgroundColor=fee2e2&textColor=991b1b&fontSize=38&fontWeight=700"},
+  {id:6,name:"Hanoi Supplies",code:"SUP-006",ava:"HS",color:"#0891b2",bg:"#ecfeff",status:"online",meta:"Raw Materials",time:"08:30",badge:0,currency:"VND",photo:"https://api.dicebear.com/7.x/initials/svg?seed=HanoiSupplies&backgroundColor=cffafe&textColor=0e7490&fontSize=38&fontWeight=700"},
+  {id:7,name:"Shanghai Trade",code:"SUP-007",ava:"ST",color:"#be123c",bg:"#fff1f2",status:"away",meta:"Consumer Goods",time:"Tue",badge:4,currency:"CNY",photo:"https://api.dicebear.com/7.x/initials/svg?seed=ShanghaiTrade&backgroundColor=ffe4e6&textColor=9f1239&fontSize=38&fontWeight=700"},
+];
+
+const CURRENCIES={
+  USD:{symbol:'$',  dec:2}, EUR:{symbol:'€',  dec:2}, GBP:{symbol:'£',  dec:2},
+  JPY:{symbol:'¥',  dec:0}, CNY:{symbol:'¥',  dec:2}, KRW:{symbol:'₩',  dec:0},
+  VND:{symbol:'₫',  dec:0}, THB:{symbol:'฿',  dec:2}, KHR:{symbol:'៛',  dec:0},
+  SGD:{symbol:'S$', dec:2}, MYR:{symbol:'RM', dec:2}, IDR:{symbol:'Rp', dec:0},
+};
+
+function fmt(amount){
+  const cur = currentSup ? (CURRENCIES[currentSup.currency]||{symbol:currentSup.currency+' ',dec:2}) : {symbol:'$',dec:2};
+  return cur.symbol + amount.toLocaleString('en-US',{minimumFractionDigits:cur.dec,maximumFractionDigits:cur.dec});
+}
+
+let currentSup  = null;
+let lines       = [];
+let showSummary = false;
+let poNumber    = '';
+let currentImg  = null;
+let activeSup   = null; // for tablet highlight
+
+// ══════════════════════════ RESPONSIVE HELPERS ══════════════════════════
+function isTablet(){ return window.innerWidth >= 768; }
+
+function showMainView(id){
+  $('#main .view').removeClass('active');
+  $('#'+id).addClass('active');
+}
+
+// ══════════════════════════ SUPPLIERS ══════════════════════════
+function renderSuppliers(q){
+  const list = q
+    ? SUPPLIERS.filter(s=>s.name.toLowerCase().includes(q.toLowerCase())||s.code.toLowerCase().includes(q.toLowerCase()))
+    : SUPPLIERS;
+  if(!list.length){
+    $('#supList').html('<div style="text-align:center;padding:40px;color:var(--muted);font-size:13px;">No suppliers found</div>');
+    return;
+  }
+  $('#supList').html(list.map(s=>`
+    <div class="sup-item ${activeSup===s.id?'active-sup':''}" onclick="openPO(${s.id})">
+      <div class="ava" style="background:${s.bg};color:${s.color};border-radius:14px;">
+        ${s.photo?`<img class="ava-photo" src="${s.photo}" alt="${s.name}" onerror="this.style.display='none'">`:''}
+        <div class="ava-fallback" ${s.photo?'style="opacity:0"':''}>${s.ava}</div>
+        <div class="dot ${s.status}"></div>
+      </div>
+      <div class="sup-body">
+        <div class="sup-name">${s.name}</div>
+        <div class="sup-meta" style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;">
+          <span class="sup-code">${s.code}</span>
+          <span>·</span>
+          <span>${s.meta}</span>
+        </div>
+        <div style="margin-top:3px;">
+          <span class="cur-tag">${s.currency}</span>
+        </div>
+      </div>
+      <div class="sup-right">
+        <div class="sup-time">${s.time}</div>
+        ${s.badge?`<div class="badge">${s.badge}</div>`:''}
+      </div>
+    </div>`).join(''));
+}
+
+// ══════════════════════════ OPEN PO ══════════════════════════
+function openPO(id){
+  currentSup  = SUPPLIERS.find(s=>s.id===id);
+  activeSup   = id;
+  lines       = [];
+  showSummary = false;
+  poNumber    = 'PO-'+Date.now().toString().slice(-7);
+
+  // Header
+  $('#chatAva').css({background:currentSup.bg,color:currentSup.color});
+  $('#chatAva').html(currentSup.photo
+    ? `<img class="ava-photo" src="${currentSup.photo}" alt="${currentSup.name}" onerror="this.style.display='none'"><span class="ava-fallback" style="opacity:0">${currentSup.ava}</span>`
+    : `<span class="ava-fallback">${currentSup.ava}</span>`
+  );
+  $('#chatName').text(currentSup.name);
+  const lbl={online:'● Online',away:'◐ Away',offline:'○ Offline'};
+  $('#chatSub').attr('class','chat-hsub '+currentSup.status).text(lbl[currentSup.status]);
+
+  // On phone: hide sidebar, show main
+  if(!isTablet()){
+    $('#sidebar').addClass('hidden-mobile');
+  }
+
+  renderSuppliers($('#supSearch').val()); // refresh highlight
+  renderMessages();
+  updateBar();
+  showMainView('view-po');
+}
+
+// ══════════════════════════ BACK (phone only) ══════════════════════════
+function goBack(){
+  if(!isTablet()){
+    $('#sidebar').removeClass('hidden-mobile');
+  }
+  showMainView('view-welcome');
+  activeSup = null;
+  renderSuppliers($('#supSearch').val());
+}
+
+function goHome(){
+  lines=[]; currentSup=null; showSummary=false; activeSup=null;
+  renderSuppliers('');
+  if(!isTablet()) $('#sidebar').removeClass('hidden-mobile');
+  showMainView('view-welcome');
+}
+
+// ══════════════════════════ MESSAGES ══════════════════════════
+function renderMessages(){
+  const now     = new Date();
+  const dateStr = now.toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric'});
+  const timeStr = now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+
+  let html = `<div class="date-sep">${dateStr}</div>
+  <div class="po-header-bubble">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+      ${currentSup.photo
+        ? `<img class="sup-profile-img" src="${currentSup.photo}" alt="${currentSup.name}" onerror="this.style.display='none'">`
+        : `<div style="width:44px;height:44px;border-radius:13px;background:${currentSup.bg};color:${currentSup.color};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;flex-shrink:0;">${currentSup.ava}</div>`
+      }
+      <div>
+        <div class="po-number">${poNumber}</div>
+        <div class="po-sup-name">${currentSup.name}</div>
+      </div>
+    </div>
+    <div class="po-date">${now.toLocaleDateString('en-US',{day:'2-digit',month:'short',year:'numeric'})} · ${timeStr}</div>
+    <div style="margin-top:7px;display:flex;align-items:center;gap:6px;">
+      <span style="font-family:var(--mono);font-size:11px;background:var(--accent-lt);color:var(--accent);border:1px solid rgba(59,114,246,.2);border-radius:6px;padding:2px 8px;">${currentSup.currency}</span>
+      <span style="font-size:11px;color:var(--muted);">${CURRENCIES[currentSup.currency]?currentSup.currency+' currency':''}</span>
+    </div>
+  </div>`;
+
+  if(lines.length===0){
+    html += `<div class="empty-po">
+      <div class="empty-po-icon"><i class="fa fa-file-invoice"></i></div>
+      <div class="empty-po-title">No items yet</div>
+      <div class="empty-po-sub">Tap <b style="color:var(--accent)">+</b> to add<br>your first line item.</div>
+    </div>`;
+  } else {
+    lines.forEach(line=>{
+      const sub = lineSubtotal(line);
+      html += `<div class="line-bubble" id="line-${line.id}">
+        <div class="lb-top">
+          <span class="lb-code">${line.code}</span>
+          <div class="lb-actions">
+            <div class="lb-action" onclick="editLine('${line.id}')"><i class="fa fa-pen"></i></div>
+            <div class="lb-action del" onclick="deleteLine('${line.id}')"><i class="fa fa-trash"></i></div>
+          </div>
+        </div>
+        ${line.img?`<img class="lb-img" src="${line.img}" alt="${line.name}">`:''}
+        <div class="lb-name">${line.name}</div>
+        <div class="lb-row">
+          <div class="lb-qty-price"><span>${line.qty}</span> pcs × <span>${fmt(parseFloat(line.price))}</span></div>
+          <div class="lb-subtotal">${fmt(sub)}</div>
+        </div>
+      </div>`;
+    });
+    if(showSummary) html += buildSummary();
+  }
+
+  $('#messages').html(html);
+  scrollBottom();
+}
+
+function buildSummary(){
+  const total = lines.reduce((s,l)=>s+lineSubtotal(l),0);
+  const rows  = lines.map(l=>`
+    <div class="sb-line">
+      <span class="sb-line-name">${l.name}</span>
+      <span class="sb-line-val">${fmt(lineSubtotal(l))}</span>
+    </div>`).join('');
+  const now = new Date();
+  return `<div class="summary-bubble">
+    <div class="sb-title"><i class="fa fa-receipt"></i> Order Summary · ${lines.length} item${lines.length!==1?'s':''}</div>
+    ${rows}
+    <div class="sb-total"><span>Grand Total</span><span>${fmt(total)}</span></div>
+    <div style="font-size:10px;color:var(--muted);text-align:right;margin-top:8px;font-family:var(--mono);">${now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</div>
+  </div>`;
+}
+
+function lineSubtotal(l){ return parseFloat(l.price)*parseInt(l.qty); }
+function scrollBottom(){ setTimeout(()=>$('#messages').scrollTop(99999),60); }
+
+function toggleSummary(){
+  if(!lines.length) return;
+  showSummary=!showSummary;
+  renderMessages();
+  $('#summaryBtn').toggleClass('primary',showSummary);
+}
+
+function updateBar(){
+  const count = lines.length;
+  const total = lines.reduce((s,l)=>s+lineSubtotal(l),0);
+  $('#barCount').text(count?`${count} line${count!==1?'s':''}`:' 0 lines');
+  $('#barTotal').text(count?fmt(total):'—');
+  $('#sendBtn').prop('disabled',count===0);
+}
+
+// ══════════════════════════ MODAL ══════════════════════════
+function openModal(editId){
+  $('.err').hide();
+  $('#subPreview').hide();
+  if(editId){
+    const line = lines.find(l=>l.id===editId);
+    if(line){
+      $('#modalTitle').text('Edit Item');
+      $('#saveLbl').text('Update Item');
+      $('#fLineId').val(line.id);
+      $('#fCode').val(line.code);
+      $('#fName').val(line.name);
+      $('#fPrice').val(line.price);
+      $('#fQty').val(line.qty);
+      line.img ? setImgPreview(line.img) : clearImage();
+      calcPreview();
+    }
+  } else {
+    $('#modalTitle').text('Add Item');
+    $('#saveLbl').text('Add to PO');
+    $('#fLineId,#fCode,#fName,#fPrice,#fQty').val('');
+    clearImage();
+  }
+  $('#modal').addClass('open');
+  setTimeout(()=>$('#fCode').focus(),320);
+}
+
+function closeModal(){ $('#modal').removeClass('open'); }
+function overlayClick(e){ if($(e.target).is('#modal')) closeModal(); }
+function editLine(id){ openModal(id); }
+
+function deleteLine(id){
+  lines = lines.filter(l=>l.id!==id);
+  if(showSummary && lines.length===0) showSummary=false;
+  renderMessages(); updateBar();
+}
+
+// Image
+function handleImage(e){
+  const file = e.target.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ev=>{ currentImg=ev.target.result; setImgPreview(currentImg); };
+  reader.readAsDataURL(file);
+}
+function setImgPreview(src){
+  currentImg=src;
+  $('#imgPreview').attr('src',src);
+  $('#imgPlaceholder').hide();
+  $('#imgPreviewWrap').show();
+  $('#imgUploadArea').addClass('has-img');
+}
+function clearImage(){
+  currentImg=null;
+  $('#fImage').val('');
+  $('#imgPreview').attr('src','');
+  $('#imgPreviewWrap').hide();
+  $('#imgPlaceholder').show();
+  $('#imgUploadArea').removeClass('has-img');
+}
+function removeImage(e){ e.stopPropagation(); clearImage(); }
+
+// Live subtotal
+$('#fPrice, #fQty').on('input', calcPreview);
+function calcPreview(){
+  const p=parseFloat($('#fPrice').val())||0;
+  const q=parseInt($('#fQty').val())||0;
+  if(p>0&&q>0){ $('#subAmt').text(fmt(p*q)); $('#subPreview').show(); }
+  else { $('#subPreview').hide(); }
+}
+
+// Save
+function saveLine(){
+  let ok=true;
+  function req(sel,errId){const v=$(sel).val().trim();if(!v){$('#'+errId).show();ok=false;}else{$('#'+errId).hide();}return v;}
+  const code  = req('#fCode','errCode');
+  const name  = req('#fName','errName');
+  const price = req('#fPrice','errPrice');
+  const qty   = req('#fQty','errQty');
+  if(!ok) return;
+
+  const editId = $('#fLineId').val();
+  const line = {
+    id:editId||('L'+Date.now()),
+    code, name,
+    price:parseFloat(price)||0,
+    qty:parseInt(qty)||1,
+    img:currentImg||null
+  };
+
+  if(editId){
+    const idx = lines.findIndex(l=>l.id===editId);
+    if(idx>=0) lines[idx]=line;
+  } else {
+    lines.push(line);
+  }
+
+  closeModal(); renderMessages(); updateBar();
+}
+
+// ══════════════════════════ SUBMIT ══════════════════════════
+function submitPO(){
+  const total = lines.reduce((s,l)=>s+lineSubtotal(l),0);
+  $('#sucSub').html(`Sent to <b>${currentSup.name}</b><br>${lines.length} item${lines.length!==1?'s':''} · ${new Date().toLocaleDateString('en-US',{day:'2-digit',month:'short',year:'numeric'})}`);
+  $('#sucBox').html(`<i class="fa fa-barcode" style="margin-right:7px;"></i>${poNumber}<br>
+    <span style="font-size:11px;color:var(--muted);font-family:var(--sans);">Grand Total: ${fmt(total)}</span>`);
+  showMainView('view-success');
+}
+
+// ══════════════════════════ RESIZE ══════════════════════════
+window.addEventListener('resize',()=>{
+  if(isTablet()){
+    $('#sidebar').removeClass('hidden-mobile');
+    if(!currentSup) showMainView('view-welcome');
+  }
+});
+
+// ══════════════════════════ INIT ══════════════════════════
+renderSuppliers('');
+// Phone: show supplier list by default (sidebar visible, main shows welcome)
+if(!isTablet()) showMainView('view-welcome');
+</script>
+</body>
+</html>
