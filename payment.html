@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<title>Payments — POMS</title>
+<link rel="stylesheet" href="shared.css">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<style>
+/* ── Summary cards ── */
+.pay-summary {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 10px; margin-bottom: 16px;
+}
+.ps-card {
+  background: var(--s1); border: 1px solid var(--bd); border-radius: 14px;
+  padding: 14px 12px; box-shadow: var(--sh); text-align: center;
+}
+.ps-ic {
+  width: 34px; height: 34px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; margin: 0 auto 8px;
+}
+.ps-v { font-family: var(--mono); font-weight: 800; font-size: 18px; line-height: 1; }
+.ps-l { font-size: 10px; color: var(--mut); margin-top: 4px; font-weight: 600; }
+
+/* ── Pay button ── */
+.pay-btn {
+  background: var(--acc); color: #fff; border: none;
+  border-radius: 8px; padding: 6px 12px;
+  font-family: var(--sans); font-weight: 600; font-size: 12px;
+  cursor: pointer; display: flex; align-items: center; gap: 4px;
+  white-space: nowrap;
+}
+.pay-btn:hover { opacity: .88; }
+
+/* ── Amount colours ── */
+.amt-grn { font-family: var(--mono); font-weight: 700; font-size: 13px; color: var(--grn); }
+.amt-amb { font-family: var(--mono); font-weight: 700; font-size: 13px; color: var(--amb); }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="main">
+
+    <div class="topbar">
+      <a href="index.html" class="t-back"><i class="fa fa-chevron-left"></i></a>
+      <div class="topbar-title">Payments</div>
+      <div class="topbar-actions">
+        <a href="orders.html"><button class="t-btn ghost"><i class="fa fa-file-invoice"></i> PO History</button></a>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- Summary -->
+      <div class="pay-summary">
+        <div class="ps-card">
+          <div class="ps-ic" style="background:var(--grn-lt);color:var(--grn);"><i class="fa fa-circle-check"></i></div>
+          <div class="ps-v">$2,891</div>
+          <div class="ps-l">Total Received</div>
+        </div>
+        <div class="ps-card">
+          <div class="ps-ic" style="background:var(--amb-lt);color:var(--amb);"><i class="fa fa-clock"></i></div>
+          <div class="ps-v">$1,246</div>
+          <div class="ps-l">Outstanding</div>
+        </div>
+        <div class="ps-card">
+          <div class="ps-ic" style="background:var(--acc-lt);color:var(--acc);"><i class="fa fa-receipt"></i></div>
+          <div class="ps-v">12</div>
+          <div class="ps-l">Transactions</div>
+        </div>
+      </div>
+
+      <!-- Pending Payments -->
+      <div class="section-hd"><div class="section-t">Pending Payments</div></div>
+      <div class="card">
+        <div class="li">
+          <div class="li-av" style="background:#eaedfd;color:#4361ee;"><span class="ini">TP</span></div>
+          <div class="li-bd">
+            <div class="li-nm" style="font-family:var(--mono);font-size:12px;">PO-4738291</div>
+            <div style="font-size:13px;font-weight:600;">TechParts Co.</div>
+            <div class="li-sub">$506.00 due</div>
+          </div>
+          <div class="li-rt">
+            <button class="pay-btn" onclick="openPayModal('PO-4738291')">
+              <i class="fa fa-credit-card"></i> Pay
+            </button>
+          </div>
+        </div>
+        <div class="li">
+          <div class="li-av" style="background:#fef3c7;color:#92400e;"><span class="ini">FM</span></div>
+          <div class="li-bd">
+            <div class="li-nm" style="font-family:var(--mono);font-size:12px;">PO-4737999</div>
+            <div style="font-size:13px;font-weight:600;">FastMetals Ltd</div>
+            <div class="li-sub">₫4,500,000 remaining</div>
+          </div>
+          <div class="li-rt">
+            <button class="pay-btn" onclick="openPayModal('PO-4737999')">
+              <i class="fa fa-credit-card"></i> Pay
+            </button>
+          </div>
+        </div>
+        <div class="li">
+          <div class="li-av" style="background:#ede9fe;color:#4c1d95;"><span class="ini">PW</span></div>
+          <div class="li-bd">
+            <div class="li-nm" style="font-family:var(--mono);font-size:12px;">PO-4737841</div>
+            <div style="font-size:13px;font-weight:600;">Polymer World</div>
+            <div class="li-sub">€340.00 due</div>
+          </div>
+          <div class="li-rt">
+            <button class="pay-btn" onclick="openPayModal('PO-4737841')">
+              <i class="fa fa-credit-card"></i> Pay
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Payment History -->
+      <div class="section-hd" style="margin-top:6px;"><div class="section-t">Payment History</div></div>
+      <div class="card">
+        <div class="li">
+          <div class="li-av" style="background:var(--grn-lt);color:var(--grn);"><i class="fa fa-university"></i></div>
+          <div class="li-bd">
+            <div class="li-nm" style="font-family:var(--mono);font-size:12px;">PO-4738205 · Global Supply</div>
+            <div class="li-sub">Mar 15, 2024 · Bank Transfer</div>
+          </div>
+          <div class="li-rt">
+            <div class="amt-grn">¥12,400</div>
+            <div style="margin-top:3px;"><span class="tag t-gn" style="font-size:9px;">paid</span></div>
+          </div>
+        </div>
+        <div class="li">
+          <div class="li-av" style="background:var(--grn-lt);color:var(--grn);"><i class="fa fa-money-bill"></i></div>
+          <div class="li-bd">
+            <div class="li-nm" style="font-family:var(--mono);font-size:12px;">PO-4737762 · Nordic Parts AB</div>
+            <div class="li-sub">Mar 13, 2024 · Cash</div>
+          </div>
+          <div class="li-rt">
+            <div class="amt-grn">$1,240</div>
+            <div style="margin-top:3px;"><span class="tag t-gn" style="font-size:9px;">paid</span></div>
+          </div>
+        </div>
+        <div class="li">
+          <div class="li-av" style="background:var(--amb-lt);color:var(--amb);"><i class="fa fa-credit-card"></i></div>
+          <div class="li-bd">
+            <div class="li-nm" style="font-family:var(--mono);font-size:12px;">PO-4737999 · FastMetals Ltd</div>
+            <div class="li-sub">Mar 14, 2024 · Online · Partial</div>
+          </div>
+          <div class="li-rt">
+            <div class="amt-amb">₫4,000,000</div>
+            <div style="margin-top:3px;"><span class="tag t-am" style="font-size:9px;">partial</span></div>
+          </div>
+        </div>
+        <div class="li">
+          <div class="li-av" style="background:var(--grn-lt);color:var(--grn);"><i class="fa fa-university"></i></div>
+          <div class="li-bd">
+            <div class="li-nm" style="font-family:var(--mono);font-size:12px;">PO-4737654 · Hanoi Supplies</div>
+            <div class="li-sub">Mar 11, 2024 · Bank Transfer</div>
+          </div>
+          <div class="li-rt">
+            <div class="amt-grn">₫24,000,000</div>
+            <div style="margin-top:3px;"><span class="tag t-gn" style="font-size:9px;">paid</span></div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- Record Payment Modal -->
+<div class="overlay" id="payModal">
+  <div class="sheet">
+    <div class="sh-drag"></div>
+    <div class="sh-hd">
+      <h3>Record Payment</h3>
+      <button class="sh-cl" onclick="closePayModal()"><i class="fa fa-times"></i></button>
+    </div>
+    <div class="sh-bd">
+      <div class="field"><label>PO Number</label>
+        <input id="payPO" readonly style="background:var(--s2);">
+      </div>
+      <div class="r2">
+        <div class="field"><label>Amount *</label>
+          <input type="number" placeholder="0.00">
+        </div>
+        <div class="field"><label>Method</label>
+          <select><option>Bank Transfer</option><option>Cash</option><option>Card</option><option>Online</option></select>
+        </div>
+      </div>
+      <div class="field"><label>Date</label>
+        <input type="date" value="2024-03-17">
+      </div>
+      <div class="field"><label>Notes</label>
+        <textarea placeholder="Optional reference or notes…"></textarea>
+      </div>
+      <button class="sh-save"><i class="fa fa-check" style="margin-right:6px;"></i>Record Payment</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function openPayModal(po) {
+  document.getElementById('payPO').value = po || '';
+  document.getElementById('payModal').classList.add('show');
+}
+function closePayModal() {
+  document.getElementById('payModal').classList.remove('show');
+}
+document.getElementById('payModal').addEventListener('click', function(e) {
+  if (e.target === this) closePayModal();
+});
+</script>
+</body>
+</html>

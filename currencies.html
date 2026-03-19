@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<title>Currencies — POMS</title>
+<link rel="stylesheet" href="shared.css">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<style>
+/* Currency symbol avatar override — larger mono font */
+.cur-av { font-family: var(--mono); font-size: 17px; font-weight: 800; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="main">
+
+    <div class="topbar">
+      <a href="index.html" class="t-back"><i class="fa fa-chevron-left"></i></a>
+      <div class="topbar-title">Currencies</div>
+      <div class="topbar-actions">
+        <button class="t-btn" onclick="openModal()"><i class="fa fa-plus"></i> Add Currency</button>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">Currencies</div>
+          <span class="card-sub">12 total</span>
+        </div>
+
+        <div class="li">
+          <div class="li-av cur-av" style="background:var(--acc-lt);color:var(--acc);">$</div>
+          <div class="li-bd"><div class="li-nm">US Dollar</div><div class="li-sub"><span class="tag t-bl" style="font-size:9px;">USD</span><span>2 decimals</span></div></div>
+          <div class="li-acts"><div class="abt" onclick="openModal('Edit Currency')"><i class="fa fa-pen"></i></div><div class="abt del"><i class="fa fa-trash"></i></div></div>
+        </div>
+
+        <div class="li">
+          <div class="li-av cur-av" style="background:#ede9fe;color:var(--pur);">€</div>
+          <div class="li-bd"><div class="li-nm">Euro</div><div class="li-sub"><span class="tag t-bl" style="font-size:9px;">EUR</span><span>2 decimals</span></div></div>
+          <div class="li-acts"><div class="abt" onclick="openModal('Edit Currency')"><i class="fa fa-pen"></i></div><div class="abt del"><i class="fa fa-trash"></i></div></div>
+        </div>
+
+        <div class="li">
+          <div class="li-av cur-av" style="background:var(--grn-lt);color:var(--grn);">£</div>
+          <div class="li-bd"><div class="li-nm">British Pound</div><div class="li-sub"><span class="tag t-bl" style="font-size:9px;">GBP</span><span>2 decimals</span></div></div>
+          <div class="li-acts"><div class="abt" onclick="openModal('Edit Currency')"><i class="fa fa-pen"></i></div><div class="abt del"><i class="fa fa-trash"></i></div></div>
+        </div>
+
+        <div class="li">
+          <div class="li-av cur-av" style="background:var(--amb-lt);color:var(--amb);">¥</div>
+          <div class="li-bd"><div class="li-nm">Japanese Yen</div><div class="li-sub"><span class="tag t-bl" style="font-size:9px;">JPY</span><span>0 decimals</span></div></div>
+          <div class="li-acts"><div class="abt" onclick="openModal('Edit Currency')"><i class="fa fa-pen"></i></div><div class="abt del"><i class="fa fa-trash"></i></div></div>
+        </div>
+
+        <div class="li">
+          <div class="li-av cur-av" style="background:var(--red-lt);color:var(--red);">¥</div>
+          <div class="li-bd"><div class="li-nm">Chinese Yuan</div><div class="li-sub"><span class="tag t-bl" style="font-size:9px;">CNY</span><span>2 decimals</span></div></div>
+          <div class="li-acts"><div class="abt" onclick="openModal('Edit Currency')"><i class="fa fa-pen"></i></div><div class="abt del"><i class="fa fa-trash"></i></div></div>
+        </div>
+
+        <div class="li">
+          <div class="li-av cur-av" style="background:var(--cyn-lt);color:var(--cyn);">₫</div>
+          <div class="li-bd"><div class="li-nm">Vietnamese Dong</div><div class="li-sub"><span class="tag t-bl" style="font-size:9px;">VND</span><span>0 decimals</span></div></div>
+          <div class="li-acts"><div class="abt" onclick="openModal('Edit Currency')"><i class="fa fa-pen"></i></div><div class="abt del"><i class="fa fa-trash"></i></div></div>
+        </div>
+
+        <div class="li">
+          <div class="li-av cur-av" style="background:var(--grn-lt);color:var(--grn);">฿</div>
+          <div class="li-bd"><div class="li-nm">Thai Baht</div><div class="li-sub"><span class="tag t-bl" style="font-size:9px;">THB</span><span>2 decimals</span></div></div>
+          <div class="li-acts"><div class="abt" onclick="openModal('Edit Currency')"><i class="fa fa-pen"></i></div><div class="abt del"><i class="fa fa-trash"></i></div></div>
+        </div>
+
+        <div class="li">
+          <div class="li-av cur-av" style="background:var(--amb-lt);color:var(--amb);">៛</div>
+          <div class="li-bd"><div class="li-nm">Cambodian Riel</div><div class="li-sub"><span class="tag t-bl" style="font-size:9px;">KHR</span><span>0 decimals</span></div></div>
+          <div class="li-acts"><div class="abt" onclick="openModal('Edit Currency')"><i class="fa fa-pen"></i></div><div class="abt del"><i class="fa fa-trash"></i></div></div>
+        </div>
+
+        <div class="li">
+          <div class="li-av cur-av" style="background:var(--acc-lt);color:var(--acc);">S$</div>
+          <div class="li-bd"><div class="li-nm">Singapore Dollar</div><div class="li-sub"><span class="tag t-bl" style="font-size:9px;">SGD</span><span>2 decimals</span></div></div>
+          <div class="li-acts"><div class="abt" onclick="openModal('Edit Currency')"><i class="fa fa-pen"></i></div><div class="abt del"><i class="fa fa-trash"></i></div></div>
+        </div>
+
+        <div class="li">
+          <div class="li-av cur-av" style="background:#ede9fe;color:var(--pur);">RM</div>
+          <div class="li-bd"><div class="li-nm">Malaysian Ringgit</div><div class="li-sub"><span class="tag t-bl" style="font-size:9px;">MYR</span><span>2 decimals</span></div></div>
+          <div class="li-acts"><div class="abt" onclick="openModal('Edit Currency')"><i class="fa fa-pen"></i></div><div class="abt del"><i class="fa fa-trash"></i></div></div>
+        </div>
+
+        <div class="li">
+          <div class="li-av cur-av" style="background:var(--red-lt);color:var(--red);">₩</div>
+          <div class="li-bd"><div class="li-nm">Korean Won</div><div class="li-sub"><span class="tag t-bl" style="font-size:9px;">KRW</span><span>0 decimals</span></div></div>
+          <div class="li-acts"><div class="abt" onclick="openModal('Edit Currency')"><i class="fa fa-pen"></i></div><div class="abt del"><i class="fa fa-trash"></i></div></div>
+        </div>
+
+        <div class="li">
+          <div class="li-av cur-av" style="background:var(--cyn-lt);color:var(--cyn);">Rp</div>
+          <div class="li-bd"><div class="li-nm">Indonesian Rupiah</div><div class="li-sub"><span class="tag t-bl" style="font-size:9px;">IDR</span><span>0 decimals</span></div></div>
+          <div class="li-acts"><div class="abt" onclick="openModal('Edit Currency')"><i class="fa fa-pen"></i></div><div class="abt del"><i class="fa fa-trash"></i></div></div>
+        </div>
+
+      </div>
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- Add / Edit Modal -->
+<div class="overlay" id="curModal">
+  <div class="sheet">
+    <div class="sh-drag"></div>
+    <div class="sh-hd">
+      <h3 id="curMT">Add Currency</h3>
+      <button class="sh-cl" onclick="closeModal()"><i class="fa fa-times"></i></button>
+    </div>
+    <div class="sh-bd">
+      <div class="r2">
+        <div class="field"><label>Code *</label><input placeholder="USD" maxlength="10"></div>
+        <div class="field"><label>Symbol *</label><input placeholder="$" maxlength="5"></div>
+      </div>
+      <div class="field"><label>Currency Name *</label><input placeholder="US Dollar"></div>
+      <div class="field"><label>Decimal Places</label>
+        <select>
+          <option value="0">0 decimals (VND, JPY, KHR)</option>
+          <option value="2" selected>2 decimals (USD, EUR, CNY)</option>
+        </select>
+      </div>
+      <button class="sh-save"><i class="fa fa-check" style="margin-right:6px;"></i>Save Currency</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function openModal(t) {
+  document.getElementById('curMT').textContent = t || 'Add Currency';
+  document.getElementById('curModal').classList.add('show');
+}
+function closeModal() {
+  document.getElementById('curModal').classList.remove('show');
+}
+document.getElementById('curModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+</script>
+</body>
+</html>

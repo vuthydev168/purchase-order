@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<title>Suppliers — POMS</title>
+<link rel="stylesheet" href="shared.css">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<style>
+.iua {
+  border: 1.5px dashed var(--bd); border-radius: 12px;
+  background: var(--s2); overflow: hidden; margin-bottom: 13px;
+  position: relative; transition: border-color .17s, background .17s; cursor: pointer;
+}
+.iua:hover { border-color: var(--acc); background: var(--acc-lt); }
+.iua-ph {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 5px; padding: 20px; pointer-events: none;
+}
+.iua-ph i     { font-size: 24px; color: var(--mut); }
+.iua-ph span  { font-size: 12px; color: var(--mut); font-weight: 500; }
+.iua-ph small { font-size: 10px; color: var(--bd); }
+.iua input[type="file"] {
+  position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;
+}
+.iua-img { width: 100%; height: 120px; object-fit: cover; border-radius: 10px; display: none; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="main">
+    <div class="topbar">
+      <a href="index.html" class="t-back"><i class="fa fa-chevron-left"></i></a>
+      <div class="topbar-title">Suppliers</div>
+      <div class="topbar-actions">
+        <button class="t-btn" onclick="openModal()"><i class="fa fa-plus"></i> Add Supplier</button>
+      </div>
+    </div>
+    <div class="content">
+
+      <div class="search-wrap" style="margin-bottom:14px;">
+        <i class="fa fa-search"></i>
+        <input class="search-input" placeholder="Search suppliers…" oninput="filterSups(this.value)">
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">All Suppliers <span class="card-sub" id="supCount">7</span></div>
+        </div>
+
+        <div id="supList">
+          <!-- TechParts -->
+          <div class="li" data-name="techparts electronics">
+            <div class="li-av" style="background:#eaedfd;color:#4361ee;"><span class="ini">TP</span><div class="li-dot online"></div></div>
+            <div class="li-bd"><div class="li-nm">TechParts Co.</div><div class="li-sub"><span class="tag t-bl" style="font-size:9px;">SUP-001</span><span class="tag t-gy" style="font-family:var(--mono);font-size:9px;">USD</span></div><div style="font-size:11px;color:var(--mut);margin-top:2px;">Electronics &amp; Components</div></div>
+            <div class="li-acts"><div class="abt" onclick="window.location='purchase.html'" title="New PO"><i class="fa fa-file-invoice"></i></div><div class="abt" onclick="openModal('Edit Supplier')"><i class="fa fa-pen"></i></div><div class="abt del"><i class="fa fa-trash"></i></div></div>
+          </div>
+          <!-- Global Supply -->
+          <div class="li" data-name="global supply merchandise">
+            <div class="li-av" style="background:#d1fae5;color:#065f46;"><span class="ini">GS</span><div class="li-dot online"></div></div>
+            <div class="li-bd"><div class="li-nm">Global Supply</div><div class="li-sub"><span class="tag t-bl" style="font-size:9px;">SUP-002</span><span class="tag t-gy" style="font-family:var(--mono);font-size:9px;">CNY</span></div><div style="font-size:11px;color:var(--mut);margin-top:2px;">General Merchandise</div></div>
+            <div class="li-acts"><div class="abt" title="New PO"><i class="fa fa-file-invoice"></i></div><div class="abt" onclick="openModal('Edit Supplier')"><i class="fa fa-pen"></i></div><div class="abt del"><i class="fa fa-trash"></i></div></div>
+          </div>
+          <!-- FastMetals -->
+          <div class="li" data-name="fastmetals steel">
+            <div class="li-av" style="background:#fef3c7;color:#92400e;"><span class="ini">FM</span><div class="li-dot away"></div></div>
+            <div class="li-bd"><div class="li-nm">FastMetals Ltd</div><div class="li-sub"><span class="tag t-bl" style="font-size:9px;">SUP-003</span><span class="tag t-gy" style="font-family:var(--mono);font-size:9px;">VND</span></div><div style="font-size:11px;color:var(--mut);margin-top:2px;">Steel &amp; Aluminum</div></div>
+            <div class="li-acts"><div class="abt" title="New PO"><i class="fa fa-file-invoice"></i></div><div class="abt" onclick="openModal('Edit Supplier')"><i class="fa fa-pen"></i></div><div class="abt del"><i class="fa fa-trash"></i></div></div>
+          </div>
+          <!-- Polymer World -->
+          <div class="li" data-name="polymer world plastics">
+            <div class="li-av" style="background:#ede9fe;color:#4c1d95;"><span class="ini">PW</span><div class="li-dot offline"></div></div>
+            <div class="li-bd"><div class="li-nm">Polymer World</div><div class="li-sub"><span class="tag t-bl" style="font-size:9px;">SUP-004</span><span class="tag t-gy" style="font-family:var(--mono);font-size:9px;">EUR</span></div><div style="font-size:11px;color:var(--mut);margin-top:2px;">Plastics &amp; Rubber</div></div>
+            <div class="li-acts"><div class="abt" title="New PO"><i class="fa fa-file-invoice"></i></div><div class="abt" onclick="openModal('Edit Supplier')"><i class="fa fa-pen"></i></div><div class="abt del"><i class="fa fa-trash"></i></div></div>
+          </div>
+          <!-- Nordic Parts -->
+          <div class="li" data-name="nordic parts mechanical">
+            <div class="li-av" style="background:#fee2e2;color:#991b1b;"><span class="ini">NP</span><div class="li-dot online"></div></div>
+            <div class="li-bd"><div class="li-nm">Nordic Parts AB</div><div class="li-sub"><span class="tag t-bl" style="font-size:9px;">SUP-005</span><span class="tag t-gy" style="font-family:var(--mono);font-size:9px;">USD</span></div><div style="font-size:11px;color:var(--mut);margin-top:2px;">Mechanical Parts</div></div>
+            <div class="li-acts"><div class="abt" title="New PO"><i class="fa fa-file-invoice"></i></div><div class="abt" onclick="openModal('Edit Supplier')"><i class="fa fa-pen"></i></div><div class="abt del"><i class="fa fa-trash"></i></div></div>
+          </div>
+          <!-- Hanoi Supplies -->
+          <div class="li" data-name="hanoi supplies raw materials">
+            <div class="li-av" style="background:#cffafe;color:#0e7490;"><span class="ini">HS</span><div class="li-dot online"></div></div>
+            <div class="li-bd"><div class="li-nm">Hanoi Supplies</div><div class="li-sub"><span class="tag t-bl" style="font-size:9px;">SUP-006</span><span class="tag t-gy" style="font-family:var(--mono);font-size:9px;">VND</span></div><div style="font-size:11px;color:var(--mut);margin-top:2px;">Raw Materials</div></div>
+            <div class="li-acts"><div class="abt" title="New PO"><i class="fa fa-file-invoice"></i></div><div class="abt" onclick="openModal('Edit Supplier')"><i class="fa fa-pen"></i></div><div class="abt del"><i class="fa fa-trash"></i></div></div>
+          </div>
+          <!-- Shanghai Trade -->
+          <div class="li" data-name="shanghai trade consumer goods">
+            <div class="li-av" style="background:#ffe4e6;color:#9f1239;"><span class="ini">ST</span><div class="li-dot away"></div></div>
+            <div class="li-bd"><div class="li-nm">Shanghai Trade</div><div class="li-sub"><span class="tag t-bl" style="font-size:9px;">SUP-007</span><span class="tag t-gy" style="font-family:var(--mono);font-size:9px;">CNY</span></div><div style="font-size:11px;color:var(--mut);margin-top:2px;">Consumer Goods</div></div>
+            <div class="li-acts"><div class="abt" title="New PO"><i class="fa fa-file-invoice"></i></div><div class="abt" onclick="openModal('Edit Supplier')"><i class="fa fa-pen"></i></div><div class="abt del"><i class="fa fa-trash"></i></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Modal -->
+<div class="overlay" id="modal">
+  <div class="sheet">
+    <div class="sh-drag"></div>
+    <div class="sh-hd"><h3 id="modalTitle">Add Supplier</h3><button class="sh-cl" onclick="closeModal()"><i class="fa fa-times"></i></button></div>
+    <div class="sh-bd">
+      <!-- Photo upload -->
+      <div class="iua" onclick="document.getElementById('supImgFile').click()">
+        <img class="iua-img" id="supImgPreview" alt="">
+        <div class="iua-ph" id="supImgPh">
+          <i class="fa fa-camera"></i>
+          <span>Tap to add logo / photo</span>
+          <small>JPG · PNG · WEBP</small>
+        </div>
+        <input type="file" id="supImgFile" accept="image/*" onchange="previewSupImg(this)">
+      </div>
+      <div class="field"><label>Supplier Name *</label><input id="fName" placeholder="e.g. ABC Trading Co."></div>
+      <div class="field"><label>Currency *</label>
+        <select id="fCurrency">
+          <option value="">Select…</option>
+          <option>USD</option><option>EUR</option><option>CNY</option>
+          <option>VND</option><option>THB</option><option>SGD</option>
+        </select>
+      </div>
+      <div class="r2">
+        <div class="field"><label>Phone</label><input id="fPhone" type="tel" placeholder="+1 555 0000"></div>
+        <div class="field"><label>Email</label><input id="fEmail" type="email" placeholder="info@supplier.com"></div>
+      </div>
+      <button class="sh-save"><i class="fa fa-check" style="margin-right:6px;"></i>Save Supplier</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function openModal(title) {
+  document.getElementById('modalTitle').textContent = title || 'Add Supplier';
+  // Reset image
+  document.getElementById('supImgFile').value = '';
+  document.getElementById('supImgPreview').style.display = 'none';
+  document.getElementById('supImgPh').style.display = '';
+  document.getElementById('modal').classList.add('show');
+}
+function closeModal() { document.getElementById('modal').classList.remove('show'); }
+
+function previewSupImg(input) {
+  if (!input.files || !input.files[0]) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var img = document.getElementById('supImgPreview');
+    img.src = e.target.result;
+    img.style.display = 'block';
+    document.getElementById('supImgPh').style.display = 'none';
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+document.getElementById('modal').addEventListener('click', function(e){ if(e.target===this) closeModal(); });
+
+function filterSups(q) {
+  q = q.toLowerCase();
+  const rows = document.querySelectorAll('#supList .li');
+  let visible = 0;
+  rows.forEach(r => {
+    const match = !q || r.dataset.name.includes(q);
+    r.style.display = match ? '' : 'none';
+    if (match) visible++;
+  });
+  document.getElementById('supCount').textContent = visible;
+}
+</script>
+</body>
+</html>

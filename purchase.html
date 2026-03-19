@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover">
+<title>New Purchase Order — POMS</title>
+<link rel="stylesheet" href="shared.css">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<style>
+
+/* This page stacks vertically — no sidebar, full height flex column */
+.app {
+  flex-direction: column;
+  height: 100dvh;
+}
+
+/* Wrapper fills remaining height after topbar and search */
+.po-wrap {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Custom topbar — slightly more compact than .topbar */
+.po-topbar {
+  height: 54px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  background: var(--s1);
+  border-bottom: 1px solid var(--bd);
+  flex-shrink: 0;
+}
+.po-topbar-title { font-size: 16px; font-weight: 700; flex: 1; }
+
+/* Search strip */
+.sup-search {
+  padding: 10px 14px;
+  background: var(--s1);
+  border-bottom: 1px solid var(--bd);
+  flex-shrink: 0;
+}
+
+/* Scrollable supplier list — fills all remaining height */
+.sup-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  background: var(--s1);
+  -webkit-overflow-scrolling: touch;
+}
+.sup-list::-webkit-scrollbar { display: none; }
+
+/* Each supplier row */
+.sup-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--bd);
+  text-decoration: none;
+  color: inherit;
+  transition: background .12s;
+  cursor: pointer;
+}
+.sup-row:last-child { border-bottom: none; }
+.sup-row:hover, .sup-row:active { background: var(--s2); }
+
+/* Avatar */
+.sup-av {
+  width: 46px; height: 46px; border-radius: 13px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 15px; position: relative; overflow: hidden;
+}
+.sup-av img {
+  width: 100%; height: 100%; object-fit: cover;
+  border-radius: inherit; position: absolute; inset: 0;
+}
+.sup-dot {
+  position: absolute; bottom: -1px; right: -1px;
+  width: 12px; height: 12px; border-radius: 50%;
+  border: 2.5px solid var(--s1);
+}
+.sup-dot.online  { background: var(--grn); }
+.sup-dot.away    { background: var(--amb); }
+.sup-dot.offline { background: var(--mut); }
+
+/* Body and right column */
+.sup-body  { flex: 1; min-width: 0; }
+.sup-name  { font-weight: 600; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sup-meta  { font-size: 11px; color: var(--mut); margin-top: 3px; display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+.sup-cur   { font-family: var(--mono); font-size: 9px; background: var(--s2); border: 1px solid var(--bd); border-radius: 4px; padding: 2px 6px; color: var(--tx2); }
+.sup-right   { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0; }
+.sup-contact { font-size: 10px; color: var(--mut); margin-top: 3px; display: flex; align-items: center; gap: 4px; }
+.sup-contact i { font-size: 9px; }
+.sup-badge   { background: var(--acc-lt); color: var(--acc); border-radius: 20px; font-size: 10px; font-weight: 700; padding: 3px 9px; }
+.sup-arrow   { font-size: 11px; color: var(--bd); transition: color .12s; }
+.sup-row:hover .sup-arrow, .sup-row:active .sup-arrow { color: var(--acc); }
+
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="po-wrap">
+
+    <!-- Topbar -->
+    <div class="po-topbar">
+      <a href="index.html" class="t-back"><i class="fa fa-chevron-left"></i></a>
+      <div class="po-topbar-title">New Purchase Order</div>
+      <a href="orders.html" class="ibt" title="PO History"><i class="fa fa-list-check"></i></a>
+    </div>
+
+    <!-- Search -->
+    <div class="sup-search">
+      <div class="search-wrap" style="margin-bottom:0;">
+        <i class="fa fa-search"></i>
+        <input class="search-input" placeholder="Search suppliers…" oninput="filterSups(this.value)">
+      </div>
+    </div>
+
+    <!-- Supplier list -->
+    <div class="sup-list" id="supList">
+
+      <a href="purchase-detail.html" class="sup-row" data-name="techparts electronics usd">
+        <div class="sup-av" style="background:var(--acc-lt);">
+          <img src="https://api.dicebear.com/7.x/initials/svg?seed=TechParts&backgroundColor=eaedfd&textColor=4361ee&fontSize=38&fontWeight=700" alt="TechParts">
+          <div class="sup-dot online"></div>
+        </div>
+        <div class="sup-body">
+          <div class="sup-name">TechParts Co.</div>
+          <div class="sup-meta">
+            <span class="sup-cur">USD</span>
+            <span>Electronics</span>
+          </div>
+          <div class="sup-contact">
+            <i class="fa fa-envelope"></i> tech@parts.com
+          </div>
+        </div>
+        <div class="sup-right">
+          <div class="sup-badge">3 POs</div>
+          <i class="fa fa-chevron-right sup-arrow"></i>
+        </div>
+      </a>
+
+      <a href="purchase-detail.html" class="sup-row" data-name="global supply merchandise cny">
+        <div class="sup-av" style="background:var(--grn-lt);">
+          <img src="https://api.dicebear.com/7.x/initials/svg?seed=GlobalSupply&backgroundColor=d1fae5&textColor=065f46&fontSize=38&fontWeight=700" alt="GlobalSupply">
+          <div class="sup-dot online"></div>
+        </div>
+        <div class="sup-body">
+          <div class="sup-name">Global Supply</div>
+          <div class="sup-meta">
+            <span class="sup-cur">CNY</span>
+            <span>Merchandise</span>
+          </div>
+          <div class="sup-contact">
+            <i class="fa fa-phone"></i> +86 21 5555 0100
+          </div>
+        </div>
+        <div class="sup-right">
+          <i class="fa fa-chevron-right sup-arrow"></i>
+        </div>
+      </a>
+
+      <a href="purchase-detail.html" class="sup-row" data-name="fastmetals steel aluminum vnd">
+        <div class="sup-av" style="background:var(--amb-lt);">
+          <img src="https://api.dicebear.com/7.x/initials/svg?seed=FastMetals&backgroundColor=fef3c7&textColor=92400e&fontSize=38&fontWeight=700" alt="FastMetals">
+          <div class="sup-dot away"></div>
+        </div>
+        <div class="sup-body">
+          <div class="sup-name">FastMetals Ltd</div>
+          <div class="sup-meta">
+            <span class="sup-cur">VND</span>
+            <span>Steel &amp; Aluminum</span>
+          </div>
+          <div class="sup-contact">
+            <i class="fa fa-envelope"></i> orders@fastmetals.vn
+          </div>
+        </div>
+        <div class="sup-right">
+          <div class="sup-badge">1 PO</div>
+          <i class="fa fa-chevron-right sup-arrow"></i>
+        </div>
+      </a>
+
+      <a href="purchase-detail.html" class="sup-row" data-name="polymer world plastics rubber eur">
+        <div class="sup-av" style="background:#ede9fe;">
+          <img src="https://api.dicebear.com/7.x/initials/svg?seed=PolymerWorld&backgroundColor=ede9fe&textColor=4c1d95&fontSize=38&fontWeight=700" alt="PolymerWorld">
+          <div class="sup-dot offline"></div>
+        </div>
+        <div class="sup-body">
+          <div class="sup-name">Polymer World</div>
+          <div class="sup-meta">
+            <span class="sup-cur">EUR</span>
+            <span>Plastics &amp; Rubber</span>
+          </div>
+          <div class="sup-contact">
+            <i class="fa fa-phone"></i> +49 30 5555 0200
+          </div>
+        </div>
+        <div class="sup-right">
+          <i class="fa fa-chevron-right sup-arrow"></i>
+        </div>
+      </a>
+
+      <a href="purchase-detail.html" class="sup-row" data-name="nordic parts mechanical usd">
+        <div class="sup-av" style="background:var(--red-lt);">
+          <img src="https://api.dicebear.com/7.x/initials/svg?seed=NordicParts&backgroundColor=fee2e2&textColor=991b1b&fontSize=38&fontWeight=700" alt="NordicParts">
+          <div class="sup-dot online"></div>
+        </div>
+        <div class="sup-body">
+          <div class="sup-name">Nordic Parts AB</div>
+          <div class="sup-meta">
+            <span class="sup-cur">USD</span>
+            <span>Mechanical Parts</span>
+          </div>
+          <div class="sup-contact">
+            <i class="fa fa-envelope"></i> nordic@partsab.se
+          </div>
+        </div>
+        <div class="sup-right">
+          <div class="sup-badge">2 POs</div>
+          <i class="fa fa-chevron-right sup-arrow"></i>
+        </div>
+      </a>
+
+      <a href="purchase-detail.html" class="sup-row" data-name="hanoi supplies raw materials vnd">
+        <div class="sup-av" style="background:var(--cyn-lt);">
+          <img src="https://api.dicebear.com/7.x/initials/svg?seed=HanoiSupplies&backgroundColor=cffafe&textColor=0e7490&fontSize=38&fontWeight=700" alt="HanoiSupplies">
+          <div class="sup-dot online"></div>
+        </div>
+        <div class="sup-body">
+          <div class="sup-name">Hanoi Supplies</div>
+          <div class="sup-meta">
+            <span class="sup-cur">VND</span>
+            <span>Raw Materials</span>
+          </div>
+          <div class="sup-contact">
+            <i class="fa fa-phone"></i> +84 24 5555 0300
+          </div>
+        </div>
+        <div class="sup-right">
+          <i class="fa fa-chevron-right sup-arrow"></i>
+        </div>
+      </a>
+
+      <a href="purchase-detail.html" class="sup-row" data-name="shanghai trade consumer goods cny">
+        <div class="sup-av" style="background:var(--red-lt);">
+          <img src="https://api.dicebear.com/7.x/initials/svg?seed=ShanghaiTrade&backgroundColor=fee2e2&textColor=991b1b&fontSize=38&fontWeight=700" alt="ShanghaiTrade">
+          <div class="sup-dot away"></div>
+        </div>
+        <div class="sup-body">
+          <div class="sup-name">Shanghai Trade</div>
+          <div class="sup-meta">
+            <span class="sup-cur">CNY</span>
+            <span>Consumer Goods</span>
+          </div>
+          <div class="sup-contact">
+            <i class="fa fa-envelope"></i> trade@shanghai.cn
+          </div>
+        </div>
+        <div class="sup-right">
+          <div class="sup-badge">4 POs</div>
+          <i class="fa fa-chevron-right sup-arrow"></i>
+        </div>
+      </a>
+
+      <div class="empty" id="noResults" style="display:none;">
+        <i class="fa fa-store"></i>
+        <p>No suppliers match your search.</p>
+      </div>
+
+    </div><!-- /sup-list -->
+
+    </div><!-- /po-wrap -->
+</div><!-- /app -->
+
+<script>
+function filterSups(q) {
+  q = q.toLowerCase().trim();
+  var rows = document.querySelectorAll('#supList .sup-row');
+  var visible = 0;
+  rows.forEach(function(r) {
+    var match = !q || r.dataset.name.indexOf(q) >= 0;
+    r.style.display = match ? '' : 'none';
+    if (match) visible++;
+  });
+  document.getElementById('noResults').style.display = visible ? 'none' : 'flex';
+}
+</script>
+</body>
+</html>

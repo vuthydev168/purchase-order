@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover">
+<title>Purchase Order — POMS</title>
+<link rel="stylesheet" href="shared.css">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<style>
+
+/* ── PAGE SHELL ── */
+html, body { height: 100%; overflow: hidden; }
+.app { flex-direction: column; }
+
+.po-wrap {
+  flex: 1; display: flex; flex-direction: column; overflow: hidden;
+}
+
+/* ── SUPPLIER TOPBAR ── */
+.ctop {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px; background: var(--s1);
+  border-bottom: 1px solid var(--bd); flex-shrink: 0;
+}
+.cav {
+  width: 38px; height: 38px; border-radius: 12px; flex-shrink: 0;
+  overflow: hidden; position: relative; display: flex;
+  align-items: center; justify-content: center;
+  font-weight: 700; font-size: 13px;
+}
+.cav img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; border-radius: inherit; }
+.cav-ini { position: relative; z-index: 1; }
+.chn { font-weight: 700; font-size: 14px; }
+.chs { font-size: 11px; margin-top: 1px; }
+.chs.online  { color: var(--grn); }
+.chs.away    { color: var(--amb); }
+.chs.offline { color: var(--mut); }
+
+/* ── MESSAGE FEED ── */
+.msgs {
+  flex: 1; overflow-y: auto; padding: 14px 14px 8px;
+  display: flex; flex-direction: column; gap: 10px;
+  background: var(--bg);
+}
+.msgs::-webkit-scrollbar { width: 3px; }
+.msgs::-webkit-scrollbar-thumb { background: var(--bd); border-radius: 2px; }
+
+.dsep {
+  text-align: center; font-size: 10px; color: var(--mut);
+  font-family: var(--mono); letter-spacing: .5px;
+}
+
+/* PO header bubble — left-aligned */
+.pohdr {
+  background: var(--s1); border: 1px solid var(--bd);
+  border-radius: 14px 14px 14px 4px; padding: 13px 14px;
+  align-self: flex-start; max-width: 85%; box-shadow: var(--sh);
+}
+.ponum { font-family: var(--mono); font-size: 11px; color: var(--acc); margin-bottom: 3px; }
+.posnm { font-weight: 700; font-size: 15px; margin-bottom: 2px; }
+.podt  { font-size: 11px; color: var(--mut); }
+.pocur {
+  display: inline-block; margin-top: 7px;
+  font-family: var(--mono); font-size: 11px;
+  background: var(--acc-lt); color: var(--acc);
+  border: 1px solid rgba(67,97,238,.2); border-radius: 6px; padding: 2px 8px;
+}
+.pimg { width: 42px; height: 42px; border-radius: 11px; object-fit: cover; border: 2px solid var(--bd); flex-shrink: 0; }
+
+/* Line item bubble — right-aligned */
+.lbub {
+  background: var(--s1); border: 1.5px solid var(--bd);
+  border-radius: 4px 14px 14px 14px; padding: 12px 13px;
+  align-self: flex-end; max-width: 88%; box-shadow: var(--sh);
+}
+@media (min-width: 600px) { .lbub, .sbub { max-width: 70%; } }
+.lbt   { display: flex; align-items: flex-start; justify-content: space-between; gap: 7px; margin-bottom: 6px; }
+.lcode { font-family: var(--mono); font-size: 10px; color: var(--acc); background: var(--acc-lt); border-radius: 5px; padding: 2px 6px; }
+.la-wrap { display: flex; gap: 4px; flex-shrink: 0; }
+.la {
+  width: 26px; height: 26px; border-radius: 7px;
+  border: 1px solid var(--bd); background: var(--s2);
+  color: var(--mut); display: flex; align-items: center;
+  justify-content: center; cursor: pointer; font-size: 11px; transition: all .15s;
+}
+.la:hover              { background: var(--acc); color: #fff; border-color: var(--acc); }
+.la.del:hover          { background: var(--red); color: #fff; border-color: var(--red); }
+.lnm  { font-weight: 600; font-size: 13px; margin-bottom: 3px; }
+.lrow { display: flex; align-items: center; justify-content: space-between; margin-top: 5px; }
+.lqp  { font-size: 12px; color: var(--mut); }
+.lqp span { font-family: var(--mono); color: var(--tx2); font-weight: 600; }
+.lamt { font-family: var(--mono); font-weight: 700; font-size: 15px; color: var(--acc); }
+
+/* Summary bubble — left-aligned */
+.sbub {
+  background: var(--acc-lt); border: 1.5px solid rgba(67,97,238,.18);
+  border-radius: 14px 14px 14px 4px; padding: 13px 14px;
+  align-self: flex-start; max-width: 88%; box-shadow: var(--sh);
+}
+.sbt  { font-size: 11px; color: var(--acc); font-family: var(--mono); margin-bottom: 9px; font-weight: 600; }
+.sbl  { display: flex; justify-content: space-between; font-size: 12px; padding: 4px 0; border-bottom: 1px solid rgba(67,97,238,.1); }
+.sbl:last-of-type { border-bottom: none; }
+.sbln { color: var(--mut); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-right: 9px; }
+.sblv { font-family: var(--mono); font-weight: 600; color: var(--tx2); }
+.sbtot {
+  display: flex; justify-content: space-between; font-weight: 700; font-size: 15px;
+  margin-top: 9px; padding-top: 9px; border-top: 1.5px solid rgba(67,97,238,.18);
+  font-family: var(--mono); color: var(--acc);
+}
+
+/* ── BOTTOM ACTION BAR ── */
+.pobar {
+  padding: 11px 15px; padding-bottom: max(13px, env(safe-area-inset-bottom));
+  background: var(--s1); border-top: 1px solid var(--bd);
+  display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+}
+.pb-info { flex: 1; }
+.pb-cnt  { font-size: 11px; color: var(--mut); }
+.pb-tot  { font-weight: 800; font-size: 18px; font-family: var(--mono); color: var(--acc); letter-spacing: -.5px; }
+.addbtn  {
+  width: 44px; height: 44px; border-radius: 12px;
+  background: var(--s2); border: 1.5px solid var(--bd); color: var(--tx2);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 18px; transition: all .15s; flex-shrink: 0;
+}
+.addbtn:hover, .addbtn:active { background: var(--acc); border-color: var(--acc); color: #fff; }
+.sndbtn {
+  background: linear-gradient(135deg, var(--acc), var(--pur));
+  border: none; border-radius: 12px; color: #fff;
+  font-family: var(--sans); font-weight: 700; font-size: 14px;
+  padding: 11px 22px; cursor: pointer; flex-shrink: 0;
+  box-shadow: 0 3px 12px rgba(67,97,238,.28); transition: opacity .15s;
+  display: flex; align-items: center; gap: 6px;
+}
+.sndbtn:hover { opacity: .9; }
+
+/* ── ADD ITEM MODAL — subtotal row ── */
+.sp {
+  background: var(--acc-lt); border: 1.5px solid rgba(67,97,238,.18);
+  border-radius: 11px; padding: 11px 14px; margin-bottom: 12px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.sp-lbl { font-size: 12px; color: var(--acc); font-weight: 600; }
+.sp-val { font-family: var(--mono); font-weight: 700; font-size: 17px; color: var(--acc); }
+
+/* ── IMAGE UPLOAD ── */
+.iua {
+  border: 1.5px dashed var(--bd); border-radius: 12px;
+  background: var(--s2); overflow: hidden; margin-bottom: 13px;
+  position: relative; transition: border-color .17s, background .17s;
+  cursor: pointer;
+}
+.iua:hover { border-color: var(--acc); background: var(--acc-lt); }
+.iua-ph {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 5px; padding: 20px;
+  pointer-events: none;
+}
+.iua-ph i     { font-size: 24px; color: var(--mut); }
+.iua-ph span  { font-size: 12px; color: var(--mut); font-weight: 500; }
+.iua-ph small { font-size: 10px; color: var(--bd); }
+.iua input[type="file"] {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  opacity: 0; cursor: pointer;
+}
+.iua-img {
+  width: 100%; height: 120px; object-fit: cover;
+  border-radius: 10px; display: none;
+}
+.iua-img.show { display: block; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="po-wrap">
+
+    <!-- Supplier topbar -->
+    <div class="ctop">
+      <a href="purchase.html" class="t-back"><i class="fa fa-chevron-left"></i></a>
+      <div class="cav" style="background:#eaedfd;">
+        <img src="https://api.dicebear.com/7.x/initials/svg?seed=TechParts&backgroundColor=eaedfd&textColor=4361ee&fontSize=38&fontWeight=700" alt="TechParts">
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div class="chn">TechParts Co.</div>
+        <div class="chs online">● Online</div>
+      </div>
+      <div style="display:flex;gap:7px;">
+        <div class="ibt"><i class="fa fa-list-ul"></i></div>
+        <div class="ibt" style="background:var(--acc);border-color:var(--acc);color:#fff;"
+             onclick="openAddModal()"><i class="fa fa-plus"></i></div>
+      </div>
+    </div>
+
+    <!-- Message feed -->
+    <div class="msgs">
+      <div class="dsep">Tuesday, Mar 17</div>
+
+      <!-- PO header bubble -->
+      <div class="pohdr">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+          <div class="cav" style="background:#eaedfd;width:42px;height:42px;border-radius:11px;flex-shrink:0;overflow:hidden;">
+            <img src="https://api.dicebear.com/7.x/initials/svg?seed=TechParts&backgroundColor=eaedfd&textColor=4361ee&fontSize=38&fontWeight=700" alt="TechParts" style="width:100%;height:100%;object-fit:cover;">
+          </div>
+          <div>
+            <div class="ponum">PO-4738291</div>
+            <div class="posnm">TechParts Co.</div>
+          </div>
+        </div>
+        <div class="podt">17 Mar 2024 · 10:24 AM</div>
+        <span class="pocur">USD</span>
+      </div>
+
+      <!-- Line items -->
+      <div class="lbub">
+        <div class="lbt">
+          <span class="lcode">EL-101</span>
+          <div class="la-wrap"><div class="la"><i class="fa fa-pen"></i></div><div class="la del"><i class="fa fa-trash"></i></div></div>
+        </div>
+        <div class="lnm">Arduino Nano v3</div>
+        <div class="lrow">
+          <div class="lqp"><span>10</span> pcs × <span>$8.50</span></div>
+          <div class="lamt">$85.00</div>
+        </div>
+      </div>
+
+      <div class="lbub">
+        <div class="lbt">
+          <span class="lcode">EL-205</span>
+          <div class="la-wrap"><div class="la"><i class="fa fa-pen"></i></div><div class="la del"><i class="fa fa-trash"></i></div></div>
+        </div>
+        <div class="lnm">Raspberry Pi 4 Model B 4GB</div>
+        <div class="lrow">
+          <div class="lqp"><span>5</span> pcs × <span>$65.00</span></div>
+          <div class="lamt">$325.00</div>
+        </div>
+      </div>
+
+      <div class="lbub">
+        <div class="lbt">
+          <span class="lcode">CB-311</span>
+          <div class="la-wrap"><div class="la"><i class="fa fa-pen"></i></div><div class="la del"><i class="fa fa-trash"></i></div></div>
+        </div>
+        <div class="lnm">USB-C Cable 1m Braided</div>
+        <div class="lrow">
+          <div class="lqp"><span>20</span> pcs × <span>$4.80</span></div>
+          <div class="lamt">$96.00</div>
+        </div>
+      </div>
+
+      <!-- Summary bubble -->
+      <div class="sbub">
+        <div class="sbt"><i class="fa fa-receipt"></i> Order Summary · 3 items</div>
+        <div class="sbl"><span class="sbln">Arduino Nano v3</span><span class="sblv">$85.00</span></div>
+        <div class="sbl"><span class="sbln">Raspberry Pi 4 Model B</span><span class="sblv">$325.00</span></div>
+        <div class="sbl"><span class="sbln">USB-C Cable 1m Braided</span><span class="sblv">$96.00</span></div>
+        <div class="sbtot"><span>Grand Total</span><span>$506.00</span></div>
+      </div>
+    </div><!-- /msgs -->
+
+    <!-- Bottom bar -->
+    <div class="pobar">
+      <div class="pb-info">
+        <div class="pb-cnt">3 lines</div>
+        <div class="pb-tot">$506.00</div>
+      </div>
+      <div class="addbtn" onclick="openAddModal()"><i class="fa fa-plus"></i></div>
+      <button class="sndbtn"><i class="fa fa-paper-plane"></i> Send PO</button>
+    </div>
+
+  </div><!-- /po-wrap -->
+</div><!-- /app -->
+
+<!-- Add Item Modal -->
+<div class="overlay" id="addModal">
+  <div class="sheet">
+    <div class="sh-drag"></div>
+    <div class="sh-hd">
+      <h3>Add Item</h3>
+      <button class="sh-cl" onclick="closeAddModal()"><i class="fa fa-times"></i></button>
+    </div>
+    <div class="sh-bd">
+      <!-- Image upload -->
+      <div class="iua" id="iuaWrap" onclick="document.getElementById('iuaFile').click()">
+        <img class="iua-img" id="iuaPreview" alt="Item photo">
+        <div class="iua-ph" id="iuaPh">
+          <i class="fa fa-camera"></i>
+          <span>Tap to add photo</span>
+          <small>JPG · PNG · WEBP</small>
+        </div>
+        <input type="file" id="iuaFile" accept="image/*" onchange="previewImg(this)">
+      </div>
+      <div class="field"><label>Item Name *</label><input placeholder="e.g. Arduino Nano v3"></div>
+      <div class="r2">
+        <div class="field"><label>Quantity *</label><input id="iQty" type="number" placeholder="1" value="1" oninput="calcSub()"></div>
+        <div class="field"><label>Unit Price (USD) *</label><input id="iPrice" type="number" placeholder="0.00" value="8.50" oninput="calcSub()"></div>
+      </div>
+      <div class="sp">
+        <span class="sp-lbl">Subtotal</span>
+        <span class="sp-val" id="subTotal">$85.00</span>
+      </div>
+      <button class="sh-save"><i class="fa fa-check" style="margin-right:6px;"></i>Add to PO</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function openAddModal() {
+  document.getElementById('addModal').classList.add('show');
+}
+function closeAddModal() {
+  document.getElementById('addModal').classList.remove('show');
+  // Reset image upload
+  document.getElementById('iuaFile').value = '';
+  document.getElementById('iuaPreview').classList.remove('show');
+  document.getElementById('iuaPh').style.display = '';
+}
+document.getElementById('addModal').addEventListener('click', function(e) {
+  if (e.target === this) closeAddModal();
+});
+
+function previewImg(input) {
+  if (!input.files || !input.files[0]) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var img = document.getElementById('iuaPreview');
+    img.src = e.target.result;
+    img.classList.add('show');
+    document.getElementById('iuaPh').style.display = 'none';
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+
+function calcSub() {
+  var qty   = parseFloat(document.getElementById('iQty').value)   || 0;
+  var price = parseFloat(document.getElementById('iPrice').value) || 0;
+  document.getElementById('subTotal').textContent = '$' + (qty * price).toFixed(2);
+}
+</script>
+</body>
+</html>
