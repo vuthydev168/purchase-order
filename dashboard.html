@@ -1,188 +1,401 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
-<title>Dashboard — POMS</title>
-<link rel="stylesheet" href="shared.css">
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
-<style>
-/* ── Dashboard-specific ── */
-.hero {
-  background: linear-gradient(135deg, var(--acc) 0%, var(--pur) 100%);
-  border-radius: 18px; padding: 22px 24px; margin-bottom: 20px;
-  position: relative; overflow: hidden;
-}
-.hero::after  { content:''; position:absolute; right:-30px; top:-30px; width:160px; height:160px; border-radius:50%; background:rgba(255,255,255,.07); pointer-events:none; }
-.hero::before { content:''; position:absolute; right:20px; bottom:-25px; width:100px; height:100px; border-radius:50%; background:rgba(255,255,255,.05); pointer-events:none; }
-.hero-greet { font-size:13px; color:rgba(255,255,255,.72); margin-bottom:4px; }
-.hero-title { font-size:22px; font-weight:800; color:#fff; margin-bottom:2px; letter-spacing:-.4px; }
-.hero-sub   { font-size:12px; color:rgba(255,255,255,.58); }
-.hero-btns  { display:flex; gap:10px; margin-top:18px; position:relative; z-index:1; flex-wrap:wrap; }
-.hero-btn   { height:36px; padding:0 16px; border-radius:9px; font-family:var(--sans); font-weight:600; font-size:13px; cursor:pointer; display:flex; align-items:center; gap:6px; border:none; transition:all .15s; }
-.hero-btn.primary { background:#fff; color:var(--acc); }
-.hero-btn.ghost   { background:rgba(255,255,255,.18); color:#fff; }
-.hero-btn:hover   { transform:translateY(-1px); }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+  <title>Dashboard — POMS</title>
+  <link rel="stylesheet" href="shared.css">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <style>
+    /* ── Dashboard-specific ── */
+    .hero {
+      background: linear-gradient(135deg, var(--acc) 0%, var(--pur) 100%);
+      border-radius: 18px;
+      padding: 22px 24px;
+      margin-bottom: 20px;
+      position: relative;
+      overflow: hidden;
+    }
 
-.stat-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; margin-bottom:20px; }
-@media(min-width:900px) { .stat-grid { grid-template-columns:repeat(4,1fr); } }
-.stat-card {
-  background:var(--s1); border:1px solid var(--bd); border-radius:14px;
-  padding:16px; box-shadow:var(--sh); position:relative; overflow:hidden;
-  transition:box-shadow .15s, transform .12s;
-}
-.stat-card:hover { box-shadow:var(--sh2); transform:translateY(-1px); }
-.stat-card::after { content:''; position:absolute; right:-12px; bottom:-12px; width:64px; height:64px; border-radius:50%; opacity:.07; }
-.stat-card.blue::after  { background:var(--acc); }
-.stat-card.green::after { background:var(--grn); }
-.stat-card.amber::after { background:var(--amb); }
-.stat-card.cyan::after  { background:var(--cyn); }
-.sc-icon  { width:38px; height:38px; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:15px; margin-bottom:12px; }
-.sc-val   { font-size:28px; font-weight:800; font-family:var(--mono); line-height:1; letter-spacing:-1.5px; }
-.sc-label { font-size:11px; color:var(--mut); margin-top:4px; font-weight:500; }
-.sc-delta { font-size:11px; margin-top:6px; font-weight:600; display:flex; align-items:center; gap:4px; }
-.sc-delta.up { color:var(--grn); }
-.sc-delta.dn { color:var(--red); }
+    .hero::after {
+      content: '';
+      position: absolute;
+      right: -30px;
+      top: -30px;
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, .07);
+      pointer-events: none;
+    }
 
-.row { display:grid; grid-template-columns:1fr; gap:16px; margin-bottom:20px; }
-@media(min-width:900px) { .row.split { grid-template-columns:1fr 1fr; } }
-.section-title { font-size:13px; font-weight:700; margin-bottom:12px; display:flex; align-items:center; justify-content:space-between; }
+    .hero::before {
+      content: '';
+      position: absolute;
+      right: 20px;
+      bottom: -25px;
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, .05);
+      pointer-events: none;
+    }
 
-.qg { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:20px; }
-@media(min-width:600px) { .qg { grid-template-columns:repeat(6,1fr); } }
-.qc {
-  background:var(--s1); border:1.5px solid var(--bd); border-radius:14px;
-  padding:14px 8px; text-align:center; cursor:pointer;
-  box-shadow:var(--sh); transition:box-shadow .15s, transform .12s, border-color .15s;
-}
-.qc:hover  { box-shadow:var(--sh2); transform:translateY(-2px); border-color:var(--acc); }
-.qc:active { transform:scale(.96); }
-.qc-ic { width:42px; height:42px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:18px; margin:0 auto 9px; }
-.qc-lb { font-size:11px; font-weight:600; color:var(--tx2); line-height:1.3; }
+    .hero-greet {
+      font-size: 13px;
+      color: rgba(255, 255, 255, .72);
+      margin-bottom: 4px;
+    }
 
-/* Supplier mini avatar */
-.sup-av { width:38px; height:38px; border-radius:11px; flex-shrink:0; overflow:hidden; position:relative; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; }
-.sup-av img { width:100%; height:100%; object-fit:cover; position:absolute; inset:0; border-radius:inherit; }
-.sup-av .ini { position:relative; z-index:1; }
-</style>
+    .hero-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 2px;
+      letter-spacing: -.4px;
+    }
+
+    .hero-sub {
+      font-size: 12px;
+      color: rgba(255, 255, 255, .58);
+    }
+
+    .hero-btns {
+      display: flex;
+      gap: 10px;
+      margin-top: 18px;
+      position: relative;
+      z-index: 1;
+      flex-wrap: wrap;
+    }
+
+    .hero-btn {
+      height: 36px;
+      padding: 0 16px;
+      border-radius: 9px;
+      font-family: var(--sans);
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border: none;
+      transition: all .15s;
+    }
+
+    .hero-btn.primary {
+      background: #fff;
+      color: var(--acc);
+    }
+
+    .hero-btn.ghost {
+      background: rgba(255, 255, 255, .18);
+      color: #fff;
+    }
+
+    .hero-btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    @media(min-width:900px) {
+      .stat-grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+
+    .stat-card {
+      background: var(--s1);
+      border: 1px solid var(--bd);
+      border-radius: 14px;
+      padding: 16px;
+      box-shadow: var(--sh);
+      position: relative;
+      overflow: hidden;
+      transition: box-shadow .15s, transform .12s;
+    }
+
+    .stat-card:hover {
+      box-shadow: var(--sh2);
+      transform: translateY(-1px);
+    }
+
+    .stat-card::after {
+      content: '';
+      position: absolute;
+      right: -12px;
+      bottom: -12px;
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      opacity: .07;
+    }
+
+    .stat-card.blue::after {
+      background: var(--acc);
+    }
+
+    .stat-card.green::after {
+      background: var(--grn);
+    }
+
+    .stat-card.amber::after {
+      background: var(--amb);
+    }
+
+    .stat-card.cyan::after {
+      background: var(--cyn);
+    }
+
+    .sc-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 11px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      margin-bottom: 12px;
+    }
+
+    .sc-val {
+      font-size: 28px;
+      font-weight: 800;
+      font-family: var(--mono);
+      line-height: 1;
+      letter-spacing: -1.5px;
+    }
+
+    .sc-label {
+      font-size: 11px;
+      color: var(--mut);
+      margin-top: 4px;
+      font-weight: 500;
+    }
+
+    .sc-delta {
+      font-size: 11px;
+      margin-top: 6px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .sc-delta.up {
+      color: var(--grn);
+    }
+
+    .sc-delta.dn {
+      color: var(--red);
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    @media(min-width:900px) {
+      .row.split {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .section-title {
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .qg {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    @media(min-width:600px) {
+      .qg {
+        grid-template-columns: repeat(6, 1fr);
+      }
+    }
+
+    .qc {
+      background: var(--s1);
+      border: 1.5px solid var(--bd);
+      border-radius: 14px;
+      padding: 14px 8px;
+      text-align: center;
+      cursor: pointer;
+      box-shadow: var(--sh);
+      transition: box-shadow .15s, transform .12s, border-color .15s;
+    }
+
+    .qc:hover {
+      box-shadow: var(--sh2);
+      transform: translateY(-2px);
+      border-color: var(--acc);
+    }
+
+    .qc:active {
+      transform: scale(.96);
+    }
+
+    .qc-ic {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      margin: 0 auto 9px;
+    }
+
+    .qc-lb {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--tx2);
+      line-height: 1.3;
+    }
+
+    /* Supplier mini avatar */
+    .sup-av {
+      width: 38px;
+      height: 38px;
+      border-radius: 11px;
+      flex-shrink: 0;
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 13px;
+    }
+
+    .sup-av img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+    }
+
+    .sup-av .ini {
+      position: relative;
+      z-index: 1;
+    }
+  </style>
 </head>
+
 <body>
-<div class="app">
-  <!-- SIDEBAR -->
-
-  <!-- MAIN -->
-  <div class="main">
-    <div class="topbar">
-      <div class="topbar-title">Dashboard</div>
-      <div class="topbar-actions">
-        <div class="ibt"><i class="fa fa-bell"></i><div class="notif"></div></div>
-        <a href="purchase.html"><button class="t-btn"><i class="fa fa-plus"></i> New PO</button></a>
-      </div>
-    </div>
-
-    <div class="content">
-
-      <!-- HERO -->
-      <div class="hero">
-        <div class="hero-greet">Good morning, John 👋</div>
-        <div class="hero-title">Purchase Order System</div>
-        <div class="hero-sub">Tuesday, March 18 — 3 pending payments require attention</div>
-        <div class="hero-btns">
-          <a href="purchase.html"><button class="hero-btn primary"><i class="fa fa-plus"></i> New PO</button></a>
-          <a href="orders.html"><button class="hero-btn ghost"><i class="fa fa-list"></i> View Orders</button></a>
+  <div class="app">
+    <!-- SIDEBAR -->
+    <!-- MAIN -->
+    <div class="main">
+      <div class="topbar">
+        <div class="topbar-title">Dashboard</div>
+        <div class="topbar-actions">
+          <div class="ibt"><i class="fa fa-bell"></i>
+            <div class="notif"></div>
+          </div>
+          <a href="purchase.html"><button class="t-btn"><i class="fa fa-plus"></i> New PO</button></a>
         </div>
       </div>
 
-      <!-- STATS -->
-      <div class="stat-grid">
-        <div class="stat-card blue">
-          <div class="sc-icon" style="background:var(--acc-lt);color:var(--acc);"><i class="fa fa-file-invoice"></i></div>
-          <div class="sc-val">48</div>
-          <div class="sc-label">Total Orders</div>
-          <div class="sc-delta up"><i class="fa fa-arrow-up"></i> +12% this month</div>
-        </div>
-        <div class="stat-card green">
-          <div class="sc-icon" style="background:var(--grn-lt);color:var(--grn);"><i class="fa fa-circle-check"></i></div>
-          <div class="sc-val">31</div>
-          <div class="sc-label">Sent &amp; Paid</div>
-          <div class="sc-delta up"><i class="fa fa-arrow-up"></i> +8% this month</div>
-        </div>
-        <div class="stat-card amber">
-          <div class="sc-icon" style="background:var(--amb-lt);color:var(--amb);"><i class="fa fa-clock"></i></div>
-          <div class="sc-val">7</div>
-          <div class="sc-label">Pending</div>
-          <div class="sc-delta dn"><i class="fa fa-arrow-down"></i> -2 from last week</div>
-        </div>
-        <div class="stat-card cyan">
-          <div class="sc-icon" style="background:var(--cyn-lt);color:var(--cyn);"><i class="fa fa-store"></i></div>
-          <div class="sc-val">7</div>
-          <div class="sc-label">Suppliers</div>
-          <div class="sc-delta up"><i class="fa fa-circle"></i> 4 online now</div>
-        </div>
-      </div>
-
-      <!-- QUICK MENU -->
-      <div class="section-title">Quick Menu</div>
-      <div class="qg">
-        <a href="purchase.html"><div class="qc"><div class="qc-ic" style="background:var(--acc-lt);color:var(--acc);"><i class="fa fa-plus-circle"></i></div><div class="qc-lb">New Order</div></div></a>
-        <a href="orders.html"><div class="qc"><div class="qc-ic" style="background:var(--grn-lt);color:var(--grn);"><i class="fa fa-list-check"></i></div><div class="qc-lb">PO History</div></div></a>
-        <a href="suppliers.html"><div class="qc"><div class="qc-ic" style="background:var(--amb-lt);color:var(--amb);"><i class="fa fa-store"></i></div><div class="qc-lb">Suppliers</div></div></a>
-        <a href="currencies.html"><div class="qc"><div class="qc-ic" style="background:var(--cyn-lt);color:var(--cyn);"><i class="fa fa-coins"></i></div><div class="qc-lb">Currencies</div></div></a>
-        <a href="exchange.html"><div class="qc"><div class="qc-ic" style="background:#f0eeff;color:var(--pur);"><i class="fa fa-arrow-right-arrow-left"></i></div><div class="qc-lb">Exchange</div></div></a>
-        <a href="payment.html"><div class="qc"><div class="qc-ic" style="background:var(--red-lt);color:var(--red);"><i class="fa fa-credit-card"></i></div><div class="qc-lb">Payments</div></div></a>
-      </div>
-
-      <!-- BOTTOM ROW -->
-      <div class="row split">
-        <!-- Recent Orders -->
-        <div>
-          <div class="section-title">Recent Orders <a href="orders.html" class="section-lnk">View all</a></div>
-          <div class="card">
-            <a class="li tap" href="purchase_detail.html">
-              <div class="li-av" style="background:#eaedfd;color:#4361ee;"><span class="ini">TP</span></div>
-              <div class="li-bd"><div class="li-nm" style="font-family:var(--mono);font-size:12px;">PO-4738291</div><div class="li-sub">TechParts Co. · Mar 17</div></div>
-              <div class="li-rt"><div style="font-family:var(--mono);font-size:12px;font-weight:700;">$850.00</div><div style="margin-top:3px;"><span class="tag t-bl">sent</span></div></div>
-            </a>
-            <a class="li tap" href="purchase_detail.html">
-              <div class="li-av" style="background:#d1fae5;color:#065f46;"><span class="ini">GS</span></div>
-              <div class="li-bd"><div class="li-nm" style="font-family:var(--mono);font-size:12px;">PO-4738205</div><div class="li-sub">Global Supply · Mar 15</div></div>
-              <div class="li-rt"><div style="font-family:var(--mono);font-size:12px;font-weight:700;">¥12,400</div><div style="margin-top:3px;"><span class="tag t-gn">paid</span></div></div>
-            </a>
-            <a class="li tap" href="purchase_detail.html">
-              <div class="li-av" style="background:#fef3c7;color:#92400e;"><span class="ini">FM</span></div>
-              <div class="li-bd"><div class="li-nm" style="font-family:var(--mono);font-size:12px;">PO-4737999</div><div class="li-sub">FastMetals Ltd · Mar 14</div></div>
-              <div class="li-rt"><div style="font-family:var(--mono);font-size:12px;font-weight:700;">₫8,500,000</div><div style="margin-top:3px;"><span class="tag t-am">partial</span></div></div>
-            </a>
-            <a class="li tap" href="purchase_detail.html">
-              <div class="li-av" style="background:#ede9fe;color:#4c1d95;"><span class="ini">PW</span></div>
-              <div class="li-bd"><div class="li-nm" style="font-family:var(--mono);font-size:12px;">PO-4737841</div><div class="li-sub">Polymer World · Mar 13</div></div>
-              <div class="li-rt"><div style="font-family:var(--mono);font-size:12px;font-weight:700;">€340.00</div><div style="margin-top:3px;"><span class="tag t-gy">draft</span></div></div>
-            </a>
-            <a class="li tap" href="purchase_detail.html">
-              <div class="li-av" style="background:#fee2e2;color:#991b1b;"><span class="ini">NP</span></div>
-              <div class="li-bd"><div class="li-nm" style="font-family:var(--mono);font-size:12px;">PO-4737762</div><div class="li-sub">Nordic Parts AB · Mar 12</div></div>
-              <div class="li-rt"><div style="font-family:var(--mono);font-size:12px;font-weight:700;">$1,240.00</div><div style="margin-top:3px;"><span class="tag t-gn">paid</span></div></div>
-            </a>
+      <div class="content">
+        <!-- STATS -->
+        <div class="stat-grid">
+          <div class="stat-card blue">
+            <div class="sc-icon" style="background:var(--acc-lt);color:var(--acc);"><i class="fa fa-file-invoice"></i>
+            </div>
+            <div class="sc-val">48</div>
+            <div class="sc-label">Total Orders</div>
+            <div class="sc-delta up"><i class="fa fa-arrow-up"></i> +12% this month</div>
+          </div>
+          <div class="stat-card green">
+            <div class="sc-icon" style="background:var(--grn-lt);color:var(--grn);"><i class="fa fa-circle-check"></i>
+            </div>
+            <div class="sc-val">31</div>
+            <div class="sc-label">Sent &amp; Paid</div>
+            <div class="sc-delta up"><i class="fa fa-arrow-up"></i> +8% this month</div>
+          </div>
+          <div class="stat-card amber">
+            <div class="sc-icon" style="background:var(--amb-lt);color:var(--amb);"><i class="fa fa-clock"></i></div>
+            <div class="sc-val">7</div>
+            <div class="sc-label">Pending</div>
+            <div class="sc-delta dn"><i class="fa fa-arrow-down"></i> -2 from last week</div>
+          </div>
+          <div class="stat-card cyan">
+            <div class="sc-icon" style="background:var(--cyn-lt);color:var(--cyn);"><i class="fa fa-store"></i></div>
+            <div class="sc-val">7</div>
+            <div class="sc-label">Suppliers</div>
+            <div class="sc-delta up"><i class="fa fa-circle"></i> 4 online now</div>
           </div>
         </div>
 
-        <!-- Active Suppliers -->
-        <div>
-          <div class="section-title">Active Suppliers <a href="suppliers.html" class="section-lnk">Manage</a></div>
-          <div class="card">
-            <div class="li"><div class="sup-av" style="background:#eaedfd;color:#4361ee;"><span class="ini">TP</span><div class="li-dot online"></div></div><div class="li-bd"><div class="li-nm">TechParts Co.</div><div class="li-sub">Electronics · USD</div></div><span class="tag t-gn" style="font-size:9px;">online</span></div>
-            <div class="li"><div class="sup-av" style="background:#d1fae5;color:#065f46;"><span class="ini">GS</span><div class="li-dot online"></div></div><div class="li-bd"><div class="li-nm">Global Supply</div><div class="li-sub">Merchandise · CNY</div></div><span class="tag t-gn" style="font-size:9px;">online</span></div>
-            <div class="li"><div class="sup-av" style="background:#fef3c7;color:#92400e;"><span class="ini">FM</span><div class="li-dot away"></div></div><div class="li-bd"><div class="li-nm">FastMetals Ltd</div><div class="li-sub">Steel · VND</div></div><span class="tag t-am" style="font-size:9px;">away</span></div>
-            <div class="li"><div class="sup-av" style="background:#ede9fe;color:#4c1d95;"><span class="ini">PW</span><div class="li-dot offline"></div></div><div class="li-bd"><div class="li-nm">Polymer World</div><div class="li-sub">Plastics · EUR</div></div><span class="tag t-gy" style="font-size:9px;">offline</span></div>
-            <div class="li"><div class="sup-av" style="background:#fee2e2;color:#991b1b;"><span class="ini">NP</span><div class="li-dot online"></div></div><div class="li-bd"><div class="li-nm">Nordic Parts AB</div><div class="li-sub">Mechanical · USD</div></div><span class="tag t-gn" style="font-size:9px;">online</span></div>
-            <div class="li"><div class="sup-av" style="background:#cffafe;color:#0e7490;"><span class="ini">HS</span><div class="li-dot online"></div></div><div class="li-bd"><div class="li-nm">Hanoi Supplies</div><div class="li-sub">Raw Materials · VND</div></div><span class="tag t-gn" style="font-size:9px;">online</span></div>
-            <div class="li"><div class="sup-av" style="background:#ffe4e6;color:#9f1239;"><span class="ini">ST</span><div class="li-dot away"></div></div><div class="li-bd"><div class="li-nm">Shanghai Trade</div><div class="li-sub">Consumer Goods · CNY</div></div><span class="tag t-am" style="font-size:9px;">away</span></div>
-          </div>
+        <!-- QUICK MENU -->
+        <div class="section-title">Quick Menu</div>
+        <div class="qg">
+          <a href="purchase.html">
+            <div class="qc">
+              <div class="qc-ic" style="background:var(--acc-lt);color:var(--acc);"><i class="fa fa-plus-circle"></i>
+              </div>
+              <div class="qc-lb">New Order</div>
+            </div>
+          </a>
+          <a href="orders.html">
+            <div class="qc">
+              <div class="qc-ic" style="background:var(--grn-lt);color:var(--grn);"><i class="fa fa-list-check"></i>
+              </div>
+              <div class="qc-lb">PO History</div>
+            </div>
+          </a>
+          <a href="suppliers.html">
+            <div class="qc">
+              <div class="qc-ic" style="background:var(--amb-lt);color:var(--amb);"><i class="fa fa-store"></i></div>
+              <div class="qc-lb">Suppliers</div>
+            </div>
+          </a>
+          <a href="currencies.html">
+            <div class="qc">
+              <div class="qc-ic" style="background:var(--cyn-lt);color:var(--cyn);"><i class="fa fa-coins"></i></div>
+              <div class="qc-lb">Currencies</div>
+            </div>
+          </a>
+          <a href="exchange.html">
+            <div class="qc">
+              <div class="qc-ic" style="background:#f0eeff;color:var(--pur);"><i
+                  class="fa fa-arrow-right-arrow-left"></i></div>
+              <div class="qc-lb">Exchange</div>
+            </div>
+          </a>
+          <a href="payment.html">
+            <div class="qc">
+              <div class="qc-ic" style="background:var(--red-lt);color:var(--red);"><i class="fa fa-credit-card"></i>
+              </div>
+              <div class="qc-lb">Payments</div>
+            </div>
+          </a>
         </div>
-      </div>
-
-    </div><!-- content -->
-  </div><!-- main -->
-</div><!-- app -->
+      </div><!-- content -->
+    </div><!-- main -->
+  </div><!-- app -->
 </body>
+
 </html>
