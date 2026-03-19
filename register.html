@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<title>User Accounts — POMS</title>
+<link rel="stylesheet" href="shared.css">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<style>
+/* Avatar upload in modal */
+.av-upload-wrap {
+  display: flex; align-items: center; gap: 16px; margin-bottom: 16px;
+}
+.av-upload-circle {
+  width: 64px; height: 64px; border-radius: 50%; flex-shrink: 0;
+  background: linear-gradient(135deg, var(--acc), var(--pur));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; font-weight: 800; color: #fff;
+  overflow: hidden; position: relative; cursor: pointer;
+  border: 2px solid var(--bd); transition: border-color .17s;
+}
+.av-upload-circle:hover { border-color: var(--acc); }
+.av-upload-circle img { width:100%; height:100%; object-fit:cover; position:absolute; inset:0; }
+.av-upload-circle span { position: relative; z-index: 1; }
+.av-upload-circle input[type="file"] { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
+.av-upload-hint strong { font-size:13px; font-weight:700; display:block; margin-bottom:3px; }
+.av-upload-hint span   { font-size:11px; color:var(--mut); }
+
+/* Role badge in list */
+.role-badge {
+  display: inline-flex; align-items: center;
+  font-size: 9px; font-weight: 700; padding: 2px 8px; border-radius: 50px;
+}
+.role-admin   { background: var(--acc-lt); color: var(--acc); }
+.role-manager { background: #ede9fe;        color: var(--pur); }
+.role-buyer   { background: var(--grn-lt);  color: var(--grn); }
+.role-viewer  { background: var(--s2);      color: var(--mut); }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="main">
+
+    <div class="topbar">
+      <a href="index.html" class="t-back"><i class="fa fa-chevron-left"></i></a>
+      <div class="topbar-title">User Accounts</div>
+      <div class="topbar-actions">
+        <button class="t-btn" onclick="openModal()"><i class="fa fa-user-plus"></i> Add User</button>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <div class="search-wrap" style="margin-bottom:14px;">
+        <i class="fa fa-search"></i>
+        <input class="search-input" placeholder="Search users…" oninput="filterUsers(this.value)">
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">All Users <span class="card-sub" id="userCount">4</span></div>
+        </div>
+
+        <div id="userList">
+
+          <div class="li" data-name="john doe admin">
+            <div class="li-av" style="background:#eaedfd;overflow:hidden;">
+              <img src="https://api.dicebear.com/7.x/initials/svg?seed=JohnDoe&backgroundColor=eaedfd&textColor=4361ee&fontSize=38&fontWeight=700" alt="JD">
+            </div>
+            <div class="li-bd">
+              <div class="li-nm">John Doe <span class="role-badge role-admin">Admin</span></div>
+              <div class="li-sub"><i class="fa fa-envelope" style="font-size:9px;"></i> john@company.com</div>
+            </div>
+            <div class="li-acts">
+              <div class="abt" onclick="openModal('Edit User')" title="Edit"><i class="fa fa-pen"></i></div>
+              <div class="abt del" title="Delete"><i class="fa fa-trash"></i></div>
+            </div>
+          </div>
+
+          <div class="li" data-name="sarah lee manager">
+            <div class="li-av" style="background:#ede9fe;overflow:hidden;">
+              <img src="https://api.dicebear.com/7.x/initials/svg?seed=SarahLee&backgroundColor=ede9fe&textColor=7048d4&fontSize=38&fontWeight=700" alt="SL">
+            </div>
+            <div class="li-bd">
+              <div class="li-nm">Sarah Lee <span class="role-badge role-manager">Manager</span></div>
+              <div class="li-sub"><i class="fa fa-envelope" style="font-size:9px;"></i> sarah@company.com</div>
+            </div>
+            <div class="li-acts">
+              <div class="abt" onclick="openModal('Edit User')" title="Edit"><i class="fa fa-pen"></i></div>
+              <div class="abt del" title="Delete"><i class="fa fa-trash"></i></div>
+            </div>
+          </div>
+
+          <div class="li" data-name="kevin nguyen buyer">
+            <div class="li-av" style="background:#e6faf4;overflow:hidden;">
+              <img src="https://api.dicebear.com/7.x/initials/svg?seed=KevinNguyen&backgroundColor=e6faf4&textColor=0ca678&fontSize=38&fontWeight=700" alt="KN">
+            </div>
+            <div class="li-bd">
+              <div class="li-nm">Kevin Nguyen <span class="role-badge role-buyer">Buyer</span></div>
+              <div class="li-sub"><i class="fa fa-envelope" style="font-size:9px;"></i> kevin@company.com</div>
+            </div>
+            <div class="li-acts">
+              <div class="abt" onclick="openModal('Edit User')" title="Edit"><i class="fa fa-pen"></i></div>
+              <div class="abt del" title="Delete"><i class="fa fa-trash"></i></div>
+            </div>
+          </div>
+
+          <div class="li" data-name="amy chen viewer">
+            <div class="li-av" style="background:#fff4e0;overflow:hidden;">
+              <img src="https://api.dicebear.com/7.x/initials/svg?seed=AmyChen&backgroundColor=fff4e0&textColor=e67700&fontSize=38&fontWeight=700" alt="AC">
+            </div>
+            <div class="li-bd">
+              <div class="li-nm">Amy Chen <span class="role-badge role-viewer">Viewer</span></div>
+              <div class="li-sub"><i class="fa fa-envelope" style="font-size:9px;"></i> amy@company.com</div>
+            </div>
+            <div class="li-acts">
+              <div class="abt" onclick="openModal('Edit User')" title="Edit"><i class="fa fa-pen"></i></div>
+              <div class="abt del" title="Delete"><i class="fa fa-trash"></i></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div><!-- /content -->
+
+  <footer class="app-footer">Developed by <span>AIS Technology</span></footer>
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- Add / Edit User Modal -->
+<div class="overlay" id="modal">
+  <div class="sheet">
+    <div class="sh-drag"></div>
+    <div class="sh-hd">
+      <h3 id="modalTitle">Add User</h3>
+      <button class="sh-cl" onclick="closeModal()"><i class="fa fa-times"></i></button>
+    </div>
+    <div class="sh-bd">
+
+      <!-- Avatar upload -->
+      <div class="av-upload-wrap">
+        <div class="av-upload-circle" id="avCircle">
+          <span id="avIni">JD</span>
+          <img id="avPreview" alt="" style="display:none;">
+          <input type="file" accept="image/*" onchange="previewAv(this)">
+        </div>
+        <div class="av-upload-hint">
+          <strong>Profile Photo</strong>
+          <span>Tap to upload.<br>JPG · PNG · WEBP</span>
+        </div>
+      </div>
+
+      <div class="r2">
+        <div class="field"><label>First Name *</label>
+          <input id="fFirst" placeholder="John" oninput="updateIni()">
+        </div>
+        <div class="field"><label>Last Name *</label>
+          <input id="fLast" placeholder="Doe" oninput="updateIni()">
+        </div>
+      </div>
+      <div class="field"><label>Email *</label>
+        <input type="email" id="fEmail" placeholder="user@company.com">
+      </div>
+      <div class="field"><label>Role</label>
+        <select id="fRole">
+          <option value="admin">Admin</option>
+          <option value="manager">Manager</option>
+          <option value="buyer" selected>Buyer</option>
+          <option value="viewer">Viewer</option>
+        </select>
+      </div>
+      <div class="field"><label>Password</label>
+        <input type="password" id="fPw" placeholder="Leave blank to keep current">
+      </div>
+      <button class="sh-save" onclick="closeModal()">
+        <i class="fa fa-check" style="margin-right:6px;"></i>Save User
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+function openModal(title) {
+  document.getElementById('modalTitle').textContent = title || 'Add User';
+  if (!title) {
+    document.getElementById('fFirst').value = '';
+    document.getElementById('fLast').value  = '';
+    document.getElementById('fEmail').value = '';
+    document.getElementById('fPw').value    = '';
+    document.getElementById('fRole').value  = 'buyer';
+    document.getElementById('avPreview').style.display = 'none';
+    document.getElementById('avIni').style.display = '';
+    document.getElementById('avIni').textContent = 'JD';
+  }
+  document.getElementById('modal').classList.add('show');
+}
+function closeModal() { document.getElementById('modal').classList.remove('show'); }
+document.getElementById('modal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+function updateIni() {
+  var f = document.getElementById('fFirst').value.trim();
+  var l = document.getElementById('fLast').value.trim();
+  document.getElementById('avIni').textContent = ((f[0] || '') + (l[0] || '')).toUpperCase() || 'JD';
+}
+
+function previewAv(input) {
+  if (!input.files || !input.files[0]) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var img = document.getElementById('avPreview');
+    img.src = e.target.result;
+    img.style.display = 'block';
+    document.getElementById('avIni').style.display = 'none';
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+
+function filterUsers(q) {
+  q = q.toLowerCase();
+  var rows = document.querySelectorAll('#userList .li');
+  var count = 0;
+  rows.forEach(function(r) {
+    var show = !q || r.dataset.name.includes(q);
+    r.style.display = show ? '' : 'none';
+    if (show) count++;
+  });
+  document.getElementById('userCount').textContent = count;
+}
+</script>
+</body>
+</html>

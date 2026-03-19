@@ -248,3 +248,16 @@ button { font-family: var(--sans); }
   transition: all .15s; display: inline-flex; align-items: center;
 }
 .chip.on, .chip:hover { background: var(--acc); color: #fff; border-color: var(--acc); }
+
+/* ── FOOTER ── */
+.app-footer {
+  flex-shrink: 0;
+  text-align: center;
+  padding: 10px 16px;
+  font-size: 11px;
+  color: var(--mut);
+  border-top: 1px solid var(--bd);
+  background: var(--s1);
+  letter-spacing: .2px;
+}
+.app-footer span { font-weight: 700; color: var(--acc); }

@@ -64,6 +64,58 @@
 .sup-av { width:38px; height:38px; border-radius:11px; flex-shrink:0; overflow:hidden; position:relative; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; }
 .sup-av img { width:100%; height:100%; object-fit:cover; position:absolute; inset:0; border-radius:inherit; }
 .sup-av .ini { position:relative; z-index:1; }
+
+/* ── USER PROFILE BUTTON ── */
+.user-btn {
+  width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
+  background: linear-gradient(135deg, var(--acc), var(--pur));
+  border: 2px solid transparent; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; color: #fff;
+  overflow: hidden; position: relative; transition: box-shadow .15s;
+}
+.user-btn:hover { box-shadow: 0 0 0 3px var(--acc-lt); }
+.user-btn img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
+
+/* ── PROFILE DROPDOWN ── */
+.profile-drop {
+  position: absolute; top: calc(100% + 10px); right: 0;
+  width: 240px; background: var(--s1); border: 1px solid var(--bd);
+  border-radius: 16px; box-shadow: var(--sh2); z-index: 300;
+  overflow: hidden; display: none;
+}
+.profile-drop.show { display: block; }
+.pd-header {
+  padding: 16px; display: flex; align-items: center; gap: 12px;
+  border-bottom: 1px solid var(--bd); background: var(--s2);
+}
+.pd-av {
+  width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
+  background: linear-gradient(135deg, var(--acc), var(--pur));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 800; color: #fff; overflow: hidden;
+}
+.pd-av img { width: 100%; height: 100%; object-fit: cover; }
+.pd-name  { font-size: 14px; font-weight: 700; }
+.pd-email { font-size: 11px; color: var(--mut); margin-top: 1px; }
+.pd-role  {
+  display: inline-block; margin-top: 4px;
+  font-size: 9px; font-weight: 700; padding: 2px 8px;
+  border-radius: 50px; background: var(--acc-lt); color: var(--acc);
+}
+.pd-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 16px; font-size: 13px; font-weight: 500;
+  color: var(--tx2); cursor: pointer; transition: background .12s;
+  text-decoration: none;
+}
+.pd-item:hover { background: var(--s2); }
+.pd-item i { width: 16px; text-align: center; font-size: 13px; color: var(--mut); }
+.pd-item.danger { color: var(--red); }
+.pd-item.danger i { color: var(--red); }
+.pd-sep { height: 1px; background: var(--bd); margin: 4px 0; }
+/* Wrapper for topbar positioning */
+.topbar-actions { position: relative; }
 </style>
 </head>
 <body>
@@ -77,6 +129,28 @@
       <div class="topbar-actions">
         <div class="ibt"><i class="fa fa-bell"></i><div class="notif"></div></div>
         <a href="purchase.html"><button class="t-btn"><i class="fa fa-plus"></i> New PO</button></a>
+        <button class="user-btn" onclick="toggleDrop()" id="userBtn" title="Profile">
+          <img src="https://api.dicebear.com/7.x/initials/svg?seed=JohnDoe&backgroundColor=4361ee&textColor=ffffff&fontSize=38&fontWeight=700" alt="JD">
+        </button>
+
+        <!-- Profile dropdown -->
+        <div class="profile-drop" id="profileDrop">
+          <div class="pd-header">
+            <div class="pd-av">
+              <img src="https://api.dicebear.com/7.x/initials/svg?seed=JohnDoe&backgroundColor=4361ee&textColor=ffffff&fontSize=38&fontWeight=700" alt="JD">
+            </div>
+            <div>
+              <div class="pd-name">John Doe</div>
+              <div class="pd-email">john@company.com</div>
+              <span class="pd-role">Admin</span>
+            </div>
+          </div>
+          <a href="#" class="pd-item"><i class="fa fa-user"></i> My Profile</a>
+          <a href="#" class="pd-item"><i class="fa fa-gear"></i> Account Settings</a>
+          <a href="#" class="pd-item"><i class="fa fa-bell"></i> Notifications</a>
+          <div class="pd-sep"></div>
+          <a href="login.html" class="pd-item danger"><i class="fa fa-arrow-right-from-bracket"></i> Sign Out</a>
+        </div>
       </div>
     </div>
 
@@ -182,7 +256,18 @@
       </div>
 
     </div><!-- content -->
-  </div><!-- main -->
+    <footer class="app-footer">Developed by <span>AIS Technology</span></footer>
+</div><!-- main -->
 </div><!-- app -->
 </body>
+<script>
+function toggleDrop() {
+  document.getElementById('profileDrop').classList.toggle('show');
+}
+document.addEventListener('click', function(e) {
+  if (!document.getElementById('userBtn').contains(e.target)) {
+    document.getElementById('profileDrop').classList.remove('show');
+  }
+});
+</script>
 </html>
